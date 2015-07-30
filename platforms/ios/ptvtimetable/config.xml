@@ -29,6 +29,9 @@
     <feature name="Notification">
         <param name="ios-package" value="CDVNotification" />
     </feature>
+    <feature name="Geolocation">
+        <param name="ios-package" value="CDVLocation" />
+    </feature>
     <allow-intent href="itms:*" />
     <allow-intent href="itms-apps:*" />
     <name>ptvtimetable</name>

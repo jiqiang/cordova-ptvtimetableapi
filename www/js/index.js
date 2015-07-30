@@ -3,6 +3,8 @@
         StatusBar.overlaysWebView( false );
         StatusBar.backgroundColorByHexString('#ffffff');
         StatusBar.styleDefault();
+
+
     }, false);
 }());
 
@@ -17,6 +19,17 @@ window.setInterval(function() {
 
 $(document).on('click', 'div.do-back', function(e) {
     $.mobile.back();
+});
+
+$(document).on('click', 'div.do-refresh', function(e) {
+    e.preventDefault();
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            alert(position.coords.latitude + ',' + position.coords.longitude);
+        },
+        function(error) {
+            console.log(error);
+        });
 });
 
 var PTVTimetableAPI = function(securityKey, developerId) {

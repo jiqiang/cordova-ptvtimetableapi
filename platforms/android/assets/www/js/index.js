@@ -1,19 +1,35 @@
-document.addEventListener('deviceready', function () {
-    StatusBar.overlaysWebView(false);
-    StatusBar.styleDefault();
-}, false);
+(function() {
+    document.addEventListener('deviceready', function () {
+        StatusBar.overlaysWebView( false );
+        StatusBar.backgroundColorByHexString('#ffffff');
+        StatusBar.styleDefault();
+
+
+    }, false);
+}());
 
 $(document).ajaxStart(function() {$.mobile.loading('show');});
 
 $(document).ajaxStop(function() {$.mobile.loading('hide');});
-/*
+
 window.setInterval(function() {
     var date = new Date();
     $(document).find("div[data-role='header'] > h1").html(moment().format("HH:mm:ss"));
 }, 1000);
-*/
+
 $(document).on('click', 'div.do-back', function(e) {
     $.mobile.back();
+});
+
+$(document).on('click', 'div.do-refresh', function(e) {
+    e.preventDefault();
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            alert(position.coords.latitude + ',' + position.coords.longitude);
+        },
+        function(error) {
+            console.log(error);
+        });
 });
 
 var PTVTimetableAPI = function(securityKey, developerId) {
