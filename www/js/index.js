@@ -1,3 +1,12 @@
+$(document).ajaxStart(function() {$.mobile.loading('show');});
+
+$(document).ajaxStop(function() {$.mobile.loading('hide');});
+
+window.setInterval(function() {
+    var date = new Date();
+    $(document).find("div[data-role='header'] > h1").html(date.toLocaleTimeString());
+}, 1000);
+
 var PTVTimetableAPI = function(securityKey, developerId) {
     var date, baseUrl, healthCheckAPI;
     date = new Date();
@@ -14,18 +23,7 @@ var PTVTimetableAPI = function(securityKey, developerId) {
         data.devid = developerId;
         var signature = _hash(request + '?' + _httpBuildQuery(data));
         data.signature = signature;
-
-        $.get(baseUrl + request, data, function(response) {
-            var items = [];
-            $.each(response, function( key, val ) {
-                items.push( "<li id='" + key + "'>" + val + "</li>" );
-              });
-
-              $( "<ul/>", {
-                "class": "my-new-list",
-                html: items.join( "" )
-              }).appendTo( "#two" );
-        }, 'json');
+        return {url: baseUrl + request, data: data};
     }
 
     var _httpBuildQuery = function(data) {
@@ -38,15 +36,58 @@ var PTVTimetableAPI = function(securityKey, developerId) {
 
     this.healthCheck = function() {
         var data = {timestamp: date.toISOString()};
-        _call(healthCheckAPI, data);
+        return _call(healthCheckAPI, data);
     }
 };
 
-var api = new PTVTimetableAPI('3e644583-fced-11e4-9dfa-061817890ad2', '1000433');
-
-
-$(document).on('pagecreate', "#two", function(event){
-    var api = new PTVTimetableAPI('3e644583-fced-11e4-9dfa-061817890ad2', '1000433');
-    api.healthCheck();
+var APIHealthStatus = Backbone.Model.extend({
+    defaults: {
+        clientClockOK: false,
+        databaseOK: false,
+        memcacheOK: false,
+        securityTokenOK: false,
+    }
 });
 
+var APIHealthStatusView = Backbone.View.extend({
+    el: $('#ptv-timetable-api-health-status'),
+
+    template: _.template($('#ptv-timetable-api-health-status-tmpl').html()),
+
+    initialize: function() {
+        this.render();
+    },
+
+    render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
+    }
+});
+
+$(document).on('pagecontainershow', function(event, ui){
+    if (ui.toPage[0].id == "two") {
+
+        var api = new PTVTimetableAPI(localStorage.securityKey, localStorage.developerId);
+        var _healthCheck = api.healthCheck();
+        Backbone.ajax({
+            dataType: "json",
+            url: _healthCheck.url,
+            data: _healthCheck.data,
+            success: function(response) {
+                var healthStatus = new APIHealthStatus(response);
+                var healthStatusView = new APIHealthStatusView({model: healthStatus});
+                healthStatusView.render();
+            }
+        });
+    }
+});
+
+$(document).on('pagecontainerbeforehide', function(event, ui) {
+    if (ui.prevPage[0].id == "one") {
+        if (typeof(Storage) !== 'undefined') {
+            localStorage.securityKey = ui.prevPage.find("input[name='security_key']").val();
+            localStorage.developerId = ui.prevPage.find("input[name='developer_id']").val();
+        }
+    }
+});
+
+//'3e644583-fced-11e4-9dfa-061817890ad2', '1000433'
