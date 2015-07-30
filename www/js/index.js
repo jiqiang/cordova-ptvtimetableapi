@@ -7,6 +7,10 @@ window.setInterval(function() {
     $(document).find("div[data-role='header'] > h1").html(date.toLocaleTimeString());
 }, 1000);
 
+$(document).on('click', 'div.do-back', function(e) {
+    $.mobile.back();
+});
+
 var PTVTimetableAPI = function(securityKey, developerId) {
     var date, baseUrl, healthCheckAPI;
     date = new Date();
