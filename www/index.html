@@ -11,7 +11,7 @@
 <!-- Start of first page: #one -->
 <div data-role="page" id="one">
 
-    <div data-role="header" data-position="fixed" data-theme="b">
+    <div data-role="header" data-position="fixed" data-theme="a">
         <h1></h1>
     </div><!-- /header -->
 
@@ -26,7 +26,7 @@
         <p><a href="#popup" class="ui-btn ui-corner-all" data-rel="dialog" data-transition="pop">Show page "popup" (as a dialog)</a></p>
     </div><!-- /content -->
 
-    <div data-role="footer" data-position="fixed" data-theme="b">
+    <div data-role="footer" data-position="fixed" data-theme="a">
         <div class="ui-grid-a center">
             <div class="ui-block-a"><a class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
             <div class="ui-block-b"><a class="ui-btn ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-inline"></a></div>
@@ -37,7 +37,7 @@
 <!-- Start of second page: #two -->
 <div data-role="page" id="two">
 
-    <div data-role="header" data-position="fixed"  data-theme="b">
+    <div data-role="header" data-position="fixed">
         <h1></h1>
     </div><!-- /header -->
 
@@ -54,7 +54,7 @@
 
     </div><!-- /content -->
 
-    <div data-role="footer" data-position="fixed" data-theme="b">
+    <div data-role="footer" data-position="fixed" data-theme="a">
         <div class="ui-grid-a center">
             <div class="ui-block-a"><a href="#one" data-transition="none" class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
             <div class="ui-block-b do-back"><a class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-notext ui-btn-inline"></a></div>
@@ -65,7 +65,7 @@
 <!-- Start of third page: #popup -->
 <div data-role="page" id="popup">
 
-    <div data-role="header" data-theme="b" data-position="fixed">
+    <div data-role="header" data-position="fixed">
         <h1 class="ui-icon-power ui-btn-icon-right">Dialog</h1>
     </div><!-- /header -->
 
@@ -89,14 +89,13 @@
         <li>Security token OK: <%= securityTokenOK%></li>
     </ul>
 </script>
-
-<script id=""
-
+<script src="cordova.js"></script>
 <script src="js/underscore-min.js"></script>
 <script src="js/jquery-1.10.2.min.js"></script>
 <script src="js/backbone-min.js"></script>
 <script src="js/jquery.mobile-1.4.5.min.js"></script>
 <script src="js/sha1.js"></script>
+<script src="js/moment.min.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>
