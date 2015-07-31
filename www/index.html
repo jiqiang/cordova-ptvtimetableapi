@@ -9,25 +9,18 @@
 <body>
 
 <!-- Start of first page: #one -->
-<div data-role="page" id="one">
+<div data-role="page" id="index">
 
     <div data-role="header" data-position="fixed" data-theme="a">
         <h1></h1>
     </div><!-- /header -->
 
     <div role="main" class="ui-content" >
-        <h2>One</h2>
-
-        <form>
-            <input type="text" name="security_key" placeholder="security key" value="3e644583-fced-11e4-9dfa-061817890ad2" />
-            <input type="text" name="developer_id" placeholder="developer id" value="1000433" />
-        </form>
-        <div id="position">glen</div>
-        <p><a href="#two" class="ui-btn ui-corner-all" data-transition="none">Show page "two"</a></p>
-        <p><a href="#popup" class="ui-btn ui-corner-all" data-rel="dialog" data-transition="pop">Show page "popup" (as a dialog)</a></p>
+        <div id="index-options"></div>
     </div><!-- /content -->
 
     <div data-role="footer" data-position="fixed" data-theme="a">
+        <div id="slide-container"></div>
         <div class="ui-grid-b center">
             <div class="ui-block-a do-refresh"><a class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-notext ui-btn-inline"></a></div>
             <div class="ui-block-b"><a class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
@@ -35,6 +28,26 @@
         </div>
     </div><!-- /footer -->
 </div><!-- /page one -->
+
+<!-- Start of second page: #stopsnearby -->
+<div data-role="page" id="stopsnearby">
+
+    <div data-role="header" data-position="fixed">
+        <h1></h1>
+    </div><!-- /header -->
+
+    <div role="main" class="ui-content">
+        <div id="stops-nearby"></div>
+    </div><!-- /content -->
+
+    <div data-role="footer" data-position="fixed" data-theme="a">
+        <div class="ui-grid-b center">
+            <div class="ui-block-a"><a class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-notext ui-btn-inline"></a></div>
+            <div class="ui-block-b"><a href="#index" data-transition="none" class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
+            <div class="ui-block-c do-back"><a class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-notext ui-btn-inline"></a></div>
+        </div>
+    </div><!-- /footer -->
+</div><!-- /page two -->
 
 <!-- Start of second page: #two -->
 <div data-role="page" id="two">
@@ -59,7 +72,7 @@
     <div data-role="footer" data-position="fixed" data-theme="a">
         <div class="ui-grid-b center">
             <div class="ui-block-a"><a class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-b"><a href="#one" data-transition="none" class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
+            <div class="ui-block-b"><a href="#index" data-transition="none" class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
             <div class="ui-block-c do-back"><a class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-notext ui-btn-inline"></a></div>
         </div>
     </div><!-- /footer -->
@@ -84,14 +97,7 @@
 </div><!-- /page popup -->
 
 <!-- Start of template -->
-<script id="ptv-timetable-api-health-status-tmpl" type="text/template">
-    <ul>
-        <li>Client clock OK: <%= clientClockOK%></li>
-        <li>Database OK: <%= databaseOK%></li>
-        <li>Memcache OK: <%= memcacheOK%></li>
-        <li>Security token OK: <%= securityTokenOK%></li>
-    </ul>
-</script>
+
 <script src="cordova.js"></script>
 <script src="js/underscore-min.js"></script>
 <script src="js/jquery-1.10.2.min.js"></script>
