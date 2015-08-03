@@ -22,7 +22,7 @@ var saveToLocalStorage = function(position) {
     $.mobile.loading("hide");
 }
 
-var PTVTimetableAPI = function(securityKey, developerId) {
+var PTVTimetableAPI_old = function(securityKey, developerId) {
     var date, baseUrl, healthCheckAPI;
     date = new Date();
     baseUrl = 'http://timetableapi.ptv.vic.gov.au';
