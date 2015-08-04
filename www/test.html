@@ -2,46 +2,94 @@
 <html>
 <head>
     <title>PTV Timetable</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" href="css/jquery.mobile-1.45.min.css" /> -->
-    <link rel="stylesheet" href="css/pure-min.css" />
+    <!-- <link rel="stylesheet" href="css/pure-min.css" /> -->
     <link rel="stylesheet" href="css/index.css" />
 </head>
 <body>
+<div id="preloader"></div>
+<!--
+<div class="navbar-fixed">
+    <nav class="teal">
+        <div class="nav-wrapper">
 
+            <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="small material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="sass.html">Sass</a></li>
+                <li><a href="badges.html">Components</a></li>
+                <li><a href="collapsible.html">Javascript</a></li>
+                <li><a href="mobile.html">Mobile</a></li>
+            </ul>
+            <ul class="side-nav" id="mobile-demo">
+                <li><a href="sass.html">Sass</a></li>
+                <li><a href="badges.html">Components</a></li>
+                <li><a href="collapsible.html">Javascript</a></li>
+                <li><a href="mobile.html">Mobile</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+-->
 <div id="container-view"></div>
 
 
 <!-- Start of template -->
 <script type="text/template" id="index-template">
-    <div class="pure-g">
-        <div class="pure-u-1">
-            <a class="pure-button" href="#nearby-stops">find nearby stops</a>
-        </div>
+    <div class="collection">
+        <a class="collection-item" href="#nearby-stops">find nearby stops</a>
     </div>
 </script>
 
 <script type="text/template" id="nearby-stops-template">
-    <% _.each(nearby_stops, function(s) { %>
-        <div class="pure-g">
-            <div class="pure-u-1 pure-u-md-1-3">
-                <a class="pure-button" href="#broad-next-departures/<%= s.stop_id %>/<%= PTVTimetableAPI.get_transport_type_id(s.transport_type) %>"><%= s.location_name %></a>
-            </div>
-        </div>
-    <% }); %>
+    <div class="row"><div class="col s12 m6 l3">
+        <% _.each(nearby_stops, function(s) { %>
+            <a class="collection-item" href="#broad-next-departures/<%= s.stop_id %>/<%= PTVTimetableAPI.get_transport_type_id(s.transport_type) %>">
+                <div class="card-panel teal">
+                    <span class="white-text">
+                        <%= s.transport_type %>: <%= s.location_name %>
+                    </span>
+                </div>
+            </a>
+        <% }); %>
+    </div></div>
 </script>
 
 <script type="text/template" id="broad-next-departures-template">
-    <ul>
-        <% _.each(broad_next_departures, function(i) { %>
-            <li>
-                <ul>
-                    <li><%= i.line_name %> line</li>
-                    <li>to <%= i.direction_name %></li>
-                    <li>arrival at <%= i.scheduled_time %></li>
-                </ul>
-            </li>
+    <div class="row"><div class="col s12 m6 l3">
+        <%
+            var _d = broad_next_departures;
+            var _n = 3;
+            var _ln = undefined;
+            var _dn = undefined;
+            var _ts = undefined;
+            var _list = _.groupBy(_d, function(el, idx) { return Math.floor(idx/_n)});
+            _list = _.toArray(_list);
+            _.each(_list, function(sld) {
+                _ln = _.first(sld).line_name;
+                _dn = _.first(sld).direction_name;
+                _ts = _.pluck(sld, "scheduled_time");
+
+        %>
+        <div class="card-panel teal">
+            <span class="white-text">
+                <table>
+                    <tbody>
+                    <tr><td colspan="3"><%= _ln %></td></tr>
+                    <tr><td colspan="3">To <%= _dn %></td></tr>
+                    <tr>
+                        <% _.each(_ts, function(t) { %>
+                            <td><%= t %></td>
+                        <% }); %>
+                    </tr>
+                    </tbody>
+                </table>
+            </span>
+        </div>
         <% }); %>
+    </div></div>
     </ul>
 </script>
 
@@ -49,7 +97,9 @@
 
 <script src="cordova.js"></script>
 <script src="js/underscore-min.js"></script>
-<script src="js/jquery-1.10.2.min.js"></script>
+<!-- <script src="js/jquery-1.10.2.min.js"></script> -->
+<script src="js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="js/materialize.min.js"></script>
 <script src="js/backbone-min.js"></script>
 <!-- <script src="js/jquery.mobile-1.4.5.min.js"></script> -->
 <script src="js/sha1.js"></script>

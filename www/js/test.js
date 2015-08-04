@@ -1,3 +1,4 @@
+$(".button-collapse").sideNav();
 // Router.
 var appRouter = Backbone.Router.extend({
 
@@ -22,6 +23,7 @@ var appRouter = Backbone.Router.extend({
   },
 
   handleNearbyStops: function() {
+    $("#preloader").html("<div class='progress'><div class='indeterminate'></div></div>");
     var that = this;
     navigator.geolocation.getCurrentPosition(function(position) {
       var endPoint = PTVTimetableAPI.stopsNearby(position.coords.latitude, position.coords.longitude);
@@ -30,15 +32,18 @@ var appRouter = Backbone.Router.extend({
       stopsList.reset();
       that.container.childView = new NearbyStopsView({collection: stopsList});
       that.container.render();
+      $("#preloader").html("");
     });
   },
 
   handleBroadNextDepartures: function(stopid, transporttypeid) {
+    $("#preloader").html("<div class='progress'><div class='indeterminate'></div></div>");
     var departures = new BroadNextDepartureCollection();
-    departures.url = PTVTimetableAPI.broadNextDepartures(transporttypeid, stopid, 1);
+    departures.url = PTVTimetableAPI.broadNextDepartures(transporttypeid, stopid, 3);
     departures.reset();
     this.container.childView = new BroadNextDeparturesView({collection: departures});
     this.container.render();
+    $("#preloader").html("");
   }
 
 });
@@ -114,17 +119,26 @@ var BroadNextDepartureCollection = Backbone.Collection.extend({
   model: BroadNextDeparture,
   url: null,
   parse: function(response) {
-    return _.reduce(response.values, function(memo, item) {
+    var departures = _.reduce(response.values, function(memo, item) {
       memo.push({
         line_id: item.platform.direction.line.line_id,
         line_name: item.platform.direction.line.line_name,
         direction_id: item.platform.direction.direction_id,
         direction_name: item.platform.direction.direction_name,
         transport_type: item.run.transport_type,
-        scheduled_time: moment(item.time_timetable_utc, moment.ISO_8601).format("YYYY-MM-DD HH:mm:ss")
+        scheduled_time: moment(item.time_timetable_utc, moment.ISO_8601).format("HH:mm:ss")
       });
       return memo;
     }, []);
+
+    var departures_sort = _.sortBy(
+      _.sortBy(departures, function(i) {
+        return i.direction_id;
+      }), function(i) {
+      return i.line_id;
+    });
+
+    return departures_sort;
   }
 });
 
@@ -158,3 +172,6 @@ Backbone.history.start();
     }, false);
 }());
 
+var showPreloader = function() {
+  $("#container-view").html("<div class='progress'><div class='indeterminate'></div></div>");
+}
