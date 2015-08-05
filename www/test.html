@@ -4,6 +4,7 @@
     <title>PTV Timetable</title>
     <link rel="stylesheet" href="css/material.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- <link rel="stylesheet" href="css/jquery.mobile-1.45.min.css" /> -->
     <!-- <link rel="stylesheet" href="css/pure-min.css" /> -->
@@ -72,6 +73,18 @@
             <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet">
             <div class="mdl-card mdl-shadow--2dp ptv-list-card">
               <div class="mdl-card__supporting-text">
+
+              <% if (s.transport_type == "train") { %>
+                <i class="fa fa-subway fa-lg"></i>
+              <% } else if (s.transport_type == "bus") { %>
+                <i class="fa fa-bus fa-lg"></i>
+              <% } else if (s.transport_type == "vline") { %>
+                <i class="fa fa-train fa-lg"></i>
+              <% } else if (s.transport_type == "tram") { %>
+                <i class="fa fa-bus fa-lg"></i>
+              <% } else if (s.transport_type == "nightrider") { %>
+                <i class="fa fa-bus fa-lg"></i>
+              <% } %>
               [<%= s.transport_type %>]
               <a href="#broad-next-departures/<%= s.stop_id %>/<%= PTVTimetableAPI.get_transport_type_id(s.transport_type) %>"><%= s.location_name %></a>
               </div>
