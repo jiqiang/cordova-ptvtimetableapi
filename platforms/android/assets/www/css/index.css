@@ -1,3 +1,5 @@
-.center {
-    text-align: center;
+
+.mdl-card {
+  width: 100%;
+  min-height: 50px;
 }
