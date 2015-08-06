@@ -14,6 +14,8 @@ var PTVTimetableAPI = {
 
     _broadNextDeparturesAPI: '/v2/mode/@mode/stop/@stop/departures/by-destination/limit/@limit',
 
+    _disruptionsAPI: '/v2/disruptions/modes/@modes',
+
 
     _hash: function(request) {
         var shaObj = new jsSHA("SHA-1", "TEXT");
@@ -58,6 +60,22 @@ var PTVTimetableAPI = {
 
     broadNextDepartures: function(mode, stop, limit) {
         var _api = this._broadNextDeparturesAPI.replace(/@mode/g, mode).replace(/@stop/g, stop).replace(/@limit/g, limit);
+        return this._call(_api, {});
+    },
+
+    disruptions: function(modes) {
+        if (!_.isArray(modes) || modes.length == 0) {
+            modes = [
+                'general',
+                'metro-bus',
+                'metro-train',
+                'metro-tram',
+                'regional-bus',
+                'regional-coach',
+                'regional-train'
+            ];
+        }
+        var _api = this._disruptionsAPI.replace(/@modes/g, modes.join(','));
         return this._call(_api, {});
     }
 };

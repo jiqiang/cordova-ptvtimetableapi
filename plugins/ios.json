@@ -35,6 +35,10 @@
                         {
                             "xml": "<feature name=\"Geolocation\"><param name=\"ios-package\" value=\"CDVLocation\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"NetworkStatus\"><param name=\"ios-package\" value=\"CDVConnection\" /></feature>",
+                            "count": 1
                         }
                     ]
                 }
@@ -50,6 +54,12 @@
                     "CoreLocation.framework": [
                         {
                             "xml": false,
+                            "count": 1
+                        }
+                    ],
+                    "SystemConfiguration.framework": [
+                        {
+                            "xml": true,
                             "count": 1
                         }
                     ]
@@ -84,6 +94,9 @@
             "PACKAGE_NAME": "com.jiqiang.ptvtimetable"
         },
         "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "com.jiqiang.ptvtimetable"
+        },
+        "cordova-plugin-network-information": {
             "PACKAGE_NAME": "com.jiqiang.ptvtimetable"
         }
     },
