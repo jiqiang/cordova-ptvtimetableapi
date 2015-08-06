@@ -1,5 +1,24 @@
+#preloader {
+  width: 100%;
+}
 
 .mdl-card {
   width: 100%;
-  min-height: 50px;
+  max-width: 768px;
+  min-height: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nearby-stop-card {
+  min-height: 65px;
+}
+
+.stop-detail-card {
+  min-height: 120px;
 }

@@ -1,110 +1,215 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PTV Timetable</title>
+    <title>Ptver</title>
+    <link rel="stylesheet" href="css/material.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/jquery.mobile-1.45.min.css" />
+    <!-- <link rel="stylesheet" href="css/jquery.mobile-1.45.min.css" /> -->
+    <!-- <link rel="stylesheet" href="css/pure-min.css" /> -->
     <link rel="stylesheet" href="css/index.css" />
 </head>
 <body>
 
-<!-- Start of first page: #one -->
-<div data-role="page" id="index">
-
-    <div data-role="header" data-position="fixed" data-theme="a">
-        <h1></h1>
-    </div><!-- /header -->
-
-    <div role="main" class="ui-content" >
-        <div id="index-options"></div>
-    </div><!-- /content -->
-
-    <div data-role="footer" data-position="fixed" data-theme="a">
-        <div id="slide-container"></div>
-        <div class="ui-grid-b center">
-            <div class="ui-block-a do-refresh"><a class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-b"><a class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-c"><a class="ui-btn ui-corner-all ui-icon-power ui-btn-icon-notext ui-btn-inline"></a></div>
-        </div>
-    </div><!-- /footer -->
-</div><!-- /page one -->
-
-<!-- Start of second page: #stopsnearby -->
-<div data-role="page" id="stopsnearby">
-
-    <div data-role="header" data-position="fixed">
-        <h1></h1>
-    </div><!-- /header -->
-
-    <div role="main" class="ui-content">
-        <div id="stops-nearby"></div>
-    </div><!-- /content -->
-
-    <div data-role="footer" data-position="fixed" data-theme="a">
-        <div class="ui-grid-b center">
-            <div class="ui-block-a"><a class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-b"><a href="#index" data-transition="none" class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-c do-back"><a class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-notext ui-btn-inline"></a></div>
-        </div>
-    </div><!-- /footer -->
-</div><!-- /page two -->
-
-<!-- Start of second page: #two -->
-<div data-role="page" id="two">
-
-    <div data-role="header" data-position="fixed">
-        <h1></h1>
-    </div><!-- /header -->
-
-    <div role="main" class="ui-content">
-        <div id="ptv-timetable-api-health-status">
-            <ul>
-                <li>Client clock OK:</li>
-                <li>Database OK:</li>
-                <li>Memcache OK:</li>
-                <li>Security token OK:</li>
-            </ul>
-        </div>
-        <p><a href="#one" data-direction="reverse" class="ui-btn ui-corner-all ui-btn-b" data-transition="none">Back to page "one"</a></p>
-
-    </div><!-- /content -->
-
-    <div data-role="footer" data-position="fixed" data-theme="a">
-        <div class="ui-grid-b center">
-            <div class="ui-block-a"><a class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-b"><a href="#index" data-transition="none" class="ui-btn ui-corner-all ui-icon-home ui-btn-icon-notext ui-btn-inline"></a></div>
-            <div class="ui-block-c do-back"><a class="ui-btn ui-corner-all ui-icon-back ui-btn-icon-notext ui-btn-inline"></a></div>
-        </div>
-    </div><!-- /footer -->
-</div><!-- /page two -->
-
-<!-- Start of third page: #popup -->
-<div data-role="page" id="popup">
-
-    <div data-role="header" data-position="fixed">
-        <h1 class="ui-icon-power ui-btn-icon-right">Dialog</h1>
-    </div><!-- /header -->
-
-    <div role="main" class="ui-content">
-        <h2>Popup</h2>
-        <p>I have an id of "popup" on my page container and only look like a dialog because the link to me had a <code>data-rel="dialog"</code> attribute which gives me this inset look and a <code>data-transition="pop"</code> attribute to change the transition to pop. Without this, I'd be styled as a normal page.</p>
-        <p><a href="#one" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-icon-back ui-btn-icon-left">Back to page "one"</a></p>
-    </div><!-- /content -->
-
-    <div data-role="footer" data-position="fixed">
-        <h4>Page Footer</h4>
-    </div><!-- /footer -->
-</div><!-- /page popup -->
+<!-- Always shows a header, even in smaller screens. -->
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">Ptver</span>
+      <!-- Add spacer, to align navigation to the right -->
+      <div class="mdl-layout-spacer"></div>
+      <!-- Navigation. We hide it in small screens. -->
+      <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="#">Home</a>
+        <a class="mdl-navigation__link" href="#nearby-stops">Find nearby stops</a>
+        <a class="mdl-navigation__link" href="#disruptions">Find disruptions</a>
+      </nav>
+    </div>
+  </header>
+  <div class="mdl-layout__drawer">
+    <span class="mdl-layout-title">Ptver</span>
+    <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="#">Home</a>
+        <a class="mdl-navigation__link" href="#nearby-stops">Find nearby stops</a>
+        <a class="mdl-navigation__link" href="#disruptions">Find disruptions</a>
+    </nav>
+  </div>
+  <main class="mdl-layout__content">
+    <div class="page-content">
+        <!-- Your content goes here -->
+        <div id="container-view"></div>
+    </div>
+  </main>
+</div>
 
 <!-- Start of template -->
+<script type="text/template" id="ptv-service-down-template">
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+            <div class="mdl-card mdl-shadow--2dp">
+              <div class="mdl-card__supporting-text">Service of PTV timetable API currently is not available. Please try it later.</div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="index-template">
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+            <div class="mdl-card mdl-shadow--2dp">
+              <div class="mdl-card__title">
+                <h2 class="mdl-card__title-text">Where I can go?</h2>
+              </div>
+              <div class="mdl-card__supporting-text">See where you can go by searching nearby stops.</div>
+              <div class="mdl-card__actions mdl-card--border">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#nearby-stops">
+                  Find nearby stops
+                </a>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+            <div class="mdl-card mdl-shadow--2dp">
+              <div class="mdl-card__title">
+                <h2 class="mdl-card__title-text">Any disruptions?</h2>
+              </div>
+              <div class="mdl-card__supporting-text">See any recently published transport disruptions may have an impact on your journeys.</div>
+              <div class="mdl-card__actions mdl-card--border">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#disruptions">
+                  Find disruptions
+                </a>
+              </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="nearby-stops-template">
+<div class="mdl-grid">
+  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+    <!-- Left aligned menu below button -->
+    <button id="nearby-stops-filter" class="mdl-button mdl-js-button mdl-button--icon">
+      <i class="material-icons">filter_list</i>
+    </button>
+
+    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect filter-list" for="nearby-stops-filter">
+      <li class="mdl-menu__item">Some Action</li>
+      <li class="mdl-menu__item">Another Action</li>
+      <li disabled class="mdl-menu__item">Disabled Action</li>
+      <li class="mdl-menu__item">Yet Another Action</li>
+    </ul>
+  </div>
+</div>
+<div class="mdl-grid">
+    <% _.each(nearby_stops, function(s) { %>
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--4-col-tablet mdl-cell--4-col-desktop">
+            <a href="#broad-next-departures/<%= s.stop_id %>/<%= PTVTimetableAPI.get_transport_type_id(s.transport_type) %>">
+            <div class="mdl-card mdl-shadow--2dp nearby-stop-card">
+              <div class="mdl-card__supporting-text">
+              <%= s.transport_type %>: <%= s.location_name %>
+              </div>
+            </div>
+            </a>
+        </div>
+    <% }); %>
+</div>
+</script>
+
+<script type="text/template" id="broad-next-departures-template">
+    <div class="mdl-grid">
+        <%
+            var _d = broad_next_departures;
+            var _n = 3;
+            var _ln = undefined;
+            var _dn = undefined;
+            var _ts = undefined;
+            var _list = _.groupBy(_d, function(el, idx) { return Math.floor(idx/_n)});
+            _list = _.toArray(_list);
+            _.each(_list, function(sld) {
+                _ln = _.first(sld).line_name;
+                _dn = _.first(sld).direction_name;
+                _ts = _.pluck(sld, "scheduled_time");
+
+        %>
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--4-col-tablet mdl-cell--4-col-desktop">
+            <div class="mdl-card mdl-shadow--2dp ptv-list-card stop-detail-card">
+            <div class="mdl-card__supporting-text">
+                <table>
+                    <tbody>
+                    <tr class="mdl-data-table__cell--non-numeric"><td colspan="3"><%= _ln %></td></tr>
+                    <tr class="mdl-data-table__cell--non-numeric"><td colspan="3">To <%= _dn %></td></tr>
+                    <tr class="mdl-data-table__cell--non-numeric">
+                        <% _.each(_ts, function(t) { %>
+                            <td>[<%= t %>]</td>
+                        <% }); %>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+            </div>
+        <% }); %>
+    </div>
+</script>
+
+<script type="text/template" id="disruptions-template">
+<div class="mdl-grid">
+  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+    <!-- Left aligned menu below button -->
+    <button id="disruptions-filter" class="mdl-button mdl-js-button mdl-button--icon">
+      <i class="material-icons">filter_list</i>
+    </button>
+
+    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect filter-list" for="disruptions-filter">
+      <li class="mdl-menu__item"><a href="#disruptions">Show all</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/general">General</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/metro-bus">Metro bus</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/metro-tram">Metro tram</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/metro-train">Metro train</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/regional-bus">Regional bus</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/regional-coach">Regional coach</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/regional-train">Regional train</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="mdl-grid">
+    <% if (disruptions.length == 0) { %>
+      <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+          <div class="mdl-card mdl-shadow--2dp">
+            <div class="mdl-card__supporting-text">
+            <p>No disruptions.</p>
+            </div>
+          </div>
+      </div>
+    <% } else { %>
+      <% _.each(disruptions, function(d) { %>
+          <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__supporting-text">
+                <p><%= d.title %></p>
+                <p><%= d.description %></p>
+                <p>Published on <%= d.publishedOn %></p>
+                </div>
+              </div>
+          </div>
+      <% }); %>
+    <% } %>
+</div>
+</script>
 
 <script src="cordova.js"></script>
 <script src="js/underscore-min.js"></script>
-<script src="js/jquery-1.10.2.min.js"></script>
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/material.min.js"></script>
 <script src="js/backbone-min.js"></script>
-<script src="js/jquery.mobile-1.4.5.min.js"></script>
 <script src="js/sha1.js"></script>
 <script src="js/moment.min.js"></script>
+<script src="js/PTVTimetableAPI.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>
