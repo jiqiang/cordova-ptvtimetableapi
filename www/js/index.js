@@ -1,5 +1,7 @@
+var Ptver = { View: {}, Model: {}, Collection: {} };
+
 // Router.
-var appRouter = Backbone.Router.extend({
+Ptver.Router = Backbone.Router.extend({
 
   container: null,
   index: null,
@@ -215,11 +217,6 @@ var DisruptionsView = Backbone.View.extend({
   }
 });
 
-// Start router.
-router = new appRouter();
-Backbone.history.start();
-
-
 (function() {
     document.addEventListener('deviceready', function () {
         StatusBar.overlaysWebView( false );
@@ -229,6 +226,11 @@ Backbone.history.start();
 
         });
     }, false);
+
+    // Start router.
+    Ptver.router = new Ptver.Router();
+    Backbone.history.start();
+
 }());
 
 $(".mdl-layout__drawer").on("click", function(e) {
