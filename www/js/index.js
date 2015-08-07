@@ -7,6 +7,10 @@ var Ptver = {
       if ($("ul.filter-list").length) {
         componentHandler.upgradeElement($("ul.filter-list")[0]);
       }
+
+      if ($("[for='filter-switch']").length) {
+        componentHandler.upgradeElement($("[for='filter-switch']")[0]);
+      }
     }
   },
 
