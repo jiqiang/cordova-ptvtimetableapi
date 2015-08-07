@@ -1,4 +1,17 @@
-var Ptver = { View: {}, Model: {}, Collection: {} };
+var Ptver = {
+  View: {},
+  Model: {},
+  Collection: {},
+  Helper: {
+    afterRender: function() {
+      if ($("ul.filter-list").length) {
+        componentHandler.upgradeElement($("ul.filter-list")[0]);
+      }
+    }
+  },
+
+  appContainer: $("#container-view")
+};
 
 // Router.
 Ptver.Router = Backbone.Router.extend({
@@ -16,7 +29,7 @@ Ptver.Router = Backbone.Router.extend({
   },
 
   initialize: function() {
-    this.container = new ContainerView();
+    this.container = new Ptver.View.ContainerView();
   },
 
   handleIndex: function() {
@@ -45,18 +58,14 @@ Ptver.Router = Backbone.Router.extend({
   },
 
   handleDisruptions: function(mode) {
-    mode = _.isNull(mode) ? [] : [mode];
-    var disruptions = new DisruptionsCollection();
-    disruptions.url = PTVTimetableAPI.disruptions(mode);
-    disruptions.reset();
-    this.container.childView = new DisruptionsView({collection: disruptions});
-    this.container.render();
+    var disruptions = new DisruptionsCollection({mode: mode});
+    var disruptionsView = new DisruptionsView({collection: disruptions});
+    disruptions.populate();
   }
-
 });
 
 // Container view.
-var ContainerView = Backbone.View.extend({
+Ptver.View.ContainerView = Backbone.View.extend({
 
   el: $("#container-view"),
 
@@ -69,13 +78,16 @@ var ContainerView = Backbone.View.extend({
 
     // Always perform API health check.
     $.get(PTVTimetableAPI.healthCheck(), function(response) {
+
       if (_.every(response, _.identity)) {
+
         if (that.childView == null) {
           that.$el.html(that.template({}));
         }
         else {
           that.$el.html(that.childView.$el);
         }
+
       }
       else {
         that.$el.html(_.template($("#ptv-service-down-template").html()));
@@ -121,7 +133,7 @@ var NearbyStopsView = Backbone.View.extend({
   },
   render: function() {
     this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
-    afterRender();
+    Ptver.Helper.afterRender();
   }
 });
 
@@ -173,7 +185,7 @@ var BroadNextDeparturesView = Backbone.View.extend({
   },
   render: function() {
     this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
-    afterRender();
+    Ptver.Helper.afterRender();
   }
 });
 
@@ -189,8 +201,31 @@ var Disruption = Backbone.Model.extend({
 });
 
 var DisruptionsCollection = Backbone.Collection.extend({
+
+  mode: null,
+
   model: Disruption,
+
   url: null,
+
+  initialize: function(options) {
+    this.mode = options.mode;
+  },
+
+  populate: function() {
+    if (this.mode == null) {
+      this.url = PTVTimetableAPI.disruptions([]);
+      var that = this;
+      this.fetch({remove: true}).then(function() {
+        localStorage.ptver_disruptions = JSON.stringify(that.toJSON());
+      });
+    }
+    else {
+      var _dps = JSON.parse(localStorage.ptver_disruptions);
+      this.reset(_.where(_dps, {mode: this.mode}));
+    }
+  },
+
   parse: function(response) {
     var _one_month_ago = moment().subtract(1, 'months');
     var _disruptions = _.reduce(response, function(memo, value, key) {
@@ -210,14 +245,17 @@ var DisruptionsCollection = Backbone.Collection.extend({
 
 var DisruptionsView = Backbone.View.extend({
 
+  el: Ptver.appContainer,
+
   template: _.template($("#disruptions-template").html()),
+
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
-    this.collection.fetch();
+    this.listenTo(this.collection, 'reset sync', this.render, this);
   },
+
   render: function() {
     this.$el.html(this.template({disruptions: this.collection.toJSON()}));
-    afterRender();
+    Ptver.Helper.afterRender();
   }
 });
 
@@ -241,8 +279,4 @@ $(".mdl-layout__drawer").on("click", function(e) {
   $(this).removeClass("is-visible");
 });
 
-var afterRender = function() {
-  if ($("ul.filter-list").length) {
-    componentHandler.upgradeElement($("ul.filter-list")[0]);
-  }
-}
+
