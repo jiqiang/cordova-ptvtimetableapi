@@ -1,187 +1,246 @@
-$(document).ajaxStart(function() {$.mobile.loading('show');});
+// Router.
+var appRouter = Backbone.Router.extend({
 
-$(document).ajaxStop(function() {$.mobile.loading('hide');});
+  container: null,
+  index: null,
+  nearby_stops: null,
+  broad_next_departures: null,
 
-window.setInterval(function() {
-    var date = new Date();
-    $(document).find("div[data-role='header'] > h1").html(moment().format("HH:mm:ss"));
-}, 1000);
+  routes: {
+    "": "handleIndex",
+    "nearby-stops": "handleNearbyStops",
+    "broad-next-departures/:stopid/:transporttypeid": "handleBroadNextDepartures",
+    "disruptions(/:mode)": "handleDisruptions"
+  },
 
-$(document).on('click', 'div.do-back', function(e) {
-    $.mobile.back();
-});
+  initialize: function() {
+    this.container = new ContainerView();
+  },
 
-$(document).on('click', 'div.do-refresh', function(e) {
-    $.mobile.loading("show");
-    navigator.geolocation.getCurrentPosition(saveToLocalStorage);
-});
+  handleIndex: function() {
+    this.container.childView = null;
+    this.container.render();
+  },
 
-var saveToLocalStorage = function(position) {
-    localStorage.latitude = position.latitude;
-    localStorage.longitude = position.longitude;
-    $.mobile.loading("hide");
-}
-
-var PTVTimetableAPI_old = function(securityKey, developerId) {
-    var date, baseUrl, healthCheckAPI;
-    date = new Date();
-    baseUrl = 'http://timetableapi.ptv.vic.gov.au';
-    healthCheckAPI = '/v2/healthcheck';
-    stopsNearbyAPI = '/v2/nearme/latitude/@lat/longitude/@long';
-    broadNextDeparturesAPI = '/v2/mode/@mode/stop/@stop/departures/by-destination/limit/@limit';
-
-    var _hash = function(request) {
-        var shaObj = new jsSHA("SHA-1", "TEXT");
-        shaObj.setHMACKey(securityKey, "TEXT");
-        shaObj.update(request);
-        return shaObj.getHMAC("HEX");
-    };
-
-    var _call = function(request, data) {
-        data.devid = developerId;
-        var signature = _hash(request + '?' + _httpBuildQuery(data));
-        data.signature = signature;
-        return {url: baseUrl + request, data: data};
-    };
-
-    var _httpBuildQuery = function(data) {
-        var ret = [];
-        for (var d in data) {
-            ret.push(encodeURIComponent(d) + "=" + encodeURIComponent(data[d]));
-        }
-        return ret.join('&');
-    };
-
-    this.healthCheck = function() {
-        var data = {timestamp: date.toISOString()};
-        var _api = healthCheckAPI;
-        return _call(_api, data);
-    };
-
-    this.stopsNearby = function(lat, lng) {
-        var _api = stopsNearbyAPI.replace(/@lat/g, lat).replace(/@long/g, lng);
-        return _call(_api, {});
-    };
-
-    this.broadNextDepartures = function(mode, stop, limit) {
-        var _api = broadNextDeparturesAPI.replace(/@mode/g, mode).replace(/@stop/g, stop).replace(/@limit/g, limit);
-        return _call(_api, {});
-    };
-};
-
-var showIndexOptions = function(latitude, longitude) {
-    var indexOptions = [
-        ['find train stops nearby', '#stopsnearby'],
-        ['show page two', '#two']
-    ];
-
-    var list = $('<ul>').attr('data-role', 'listview').appendTo($('#index-options'));
-    _.each(indexOptions, function(i) {
-        var li = $('<li>').appendTo(list);
-        var a = $('<a>').attr('href', i[1]).text(i[0]).appendTo(li);
+  handleNearbyStops: function() {
+    var that = this;
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var endPoint = PTVTimetableAPI.stopsNearby(position.coords.latitude, position.coords.longitude);
+      var stopsList = new NearbyStopsCollection();
+      stopsList.url = endPoint;
+      stopsList.reset();
+      that.container.childView = new NearbyStopsView({collection: stopsList});
+      that.container.render();
     });
+  },
 
-    $("[data-role='listview']").listview().listview('refresh');
-}
+  handleBroadNextDepartures: function(stopid, transporttypeid) {
+    var departures = new BroadNextDepartureCollection();
+    departures.url = PTVTimetableAPI.broadNextDepartures(transporttypeid, stopid, 3);
+    departures.reset();
+    this.container.childView = new BroadNextDeparturesView({collection: departures});
+    this.container.render();
+  },
 
-$(document).on('pagecontainershow', function(event, ui){
+  handleDisruptions: function(mode) {
+    mode = _.isNull(mode) ? [] : [mode];
+    var disruptions = new DisruptionsCollection();
+    disruptions.url = PTVTimetableAPI.disruptions(mode);
+    disruptions.reset();
+    this.container.childView = new DisruptionsView({collection: disruptions});
+    this.container.render();
+  }
 
-    var api = new PTVTimetableAPI('3e644583-fced-11e4-9dfa-061817890ad2', '1000433');
+});
 
-    if (ui.toPage[0].id == "index") {
-        if ($('#index-options ul').length > 0) {
-            return;
-        }
+// Container view.
+var ContainerView = Backbone.View.extend({
 
-        $.mobile.loading('show');
+  el: $("#container-view"),
 
-        if (localStorage.latitude != undefined && localStorage.longitude != undefined) {
-            showIndexOptions(localStorage.latitude, localStorage.longitude);
-            $.mobile.loading('hide');
+  template: _.template($("#index-template").html()),
+
+  childView: null,
+
+  render: function() {
+    var that = this;
+
+    // Always perform API health check.
+    $.get(PTVTimetableAPI.healthCheck(), function(response) {
+      if (_.every(response, _.identity)) {
+        if (that.childView == null) {
+          that.$el.html(that.template({}));
         }
         else {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                localStorage.latitude = position.coords.latitude;
-                localStorage.longitude = position.coords.longitude;
-
-                showIndexOptions(localStorage.latitude, localStorage.longitude);
-
-                $.mobile.loading('hide');
-            });
+          that.$el.html(that.childView.$el);
         }
-    }
-    else if (ui.toPage[0].id == "stopsnearby") {
-
-        if ($('#stops-nearby ul').length > 0) {
-            return;
-        }
-
-        $.mobile.loading('show');
-
-        var _healthCheck = api.healthCheck();
-        $.get(_healthCheck.url, _healthCheck.data, function(response) {}).then(function(healthCheckResponse) {
-            if (_.reduce(healthCheckResponse, function(memo, status) { return memo && status; }, true)) {
-                console.log('pass health check');
-                var _stopsNearby = api.stopsNearby(localStorage.latitude, localStorage.longitude);
-                return $.get(_stopsNearby.url, _stopsNearby.data, function(response) {
-
-                    var trainStops = _.filter(response, function(obj) {
-                        return obj.result.transport_type == 'train';
-                    });
-
-                    var list = $('<ul>').attr('data-role', 'listview').appendTo($('#stops-nearby'));
-                    _.each(trainStops, function(obj) {
-                        var li = $('<li>').attr('data-stop-id', obj.result.stop_id).appendTo(list);
-                        var a = $('<a>').attr('href', '#two').text(obj.result.location_name).appendTo(li);
-                    });
-
-                    $("[data-role='listview']").listview().listview('refresh');
-
-                })
-            }
-            else {
-                console.log('health check failed');
-            }
-        }).then(function(nearbyStops) {
-            var trainStops = _.filter(nearbyStops, function(obj) {
-                return obj.result.transport_type == 'train';
-            });
-            var _broadNextDepartures = api.broadNextDepartures(0, trainStops[0].result.stop_id, 2);
-            return $.get(_broadNextDepartures.url, _broadNextDepartures.data, function(response) {
-                console.log('find broad next departures');
-                var broadNextDepartures = _.filter(response.values, function(obj) {
-                    return obj.platform.direction.direction_id == 0;
-                });
-
-                console.log(broadNextDepartures);
-            })
-        }).done(function() {
-            $.mobile.loading('hide');
-        });
-
-    }
+      }
+      else {
+        that.$el.html(_.template($("#ptv-service-down-template").html()));
+      }
+    });
+  }
 });
 
-$(document).on('pagecontainerbeforehide', function(event, ui) {
-    if (ui.prevPage[0].id == "one") {
-        if (typeof(Storage) !== 'undefined') {
-            localStorage.securityKey = ui.prevPage.find("input[name='security_key']").val();
-            localStorage.developerId = ui.prevPage.find("input[name='developer_id']").val();
-        }
-    }
+// Nearby stops.
+var NearbyStop = Backbone.Model.extend({
+  defaults: {
+    suburb: null,
+    transport_type: null,
+    stop_id: null,
+    location_name: null,
+    lat: null,
+    lon: null,
+    distance: null
+  }
 });
+
+var NearbyStopsCollection = Backbone.Collection.extend({
+  model: NearbyStop,
+  url: null,
+  parse: function(response) {
+
+    var _stopList = _.reduce(response, function(memo, item) {
+      memo.push(item.result);
+      return memo;
+    }, []);
+
+    _stopList = _.sortBy(_stopList, "transport_type");
+    return _stopList;
+  }
+});
+
+var NearbyStopsView = Backbone.View.extend({
+
+  template: _.template($("#nearby-stops-template").html()),
+  initialize: function() {
+    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
+    this.collection.fetch();
+  },
+  render: function() {
+    this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
+    afterRender();
+  }
+});
+
+// Broad next departures.
+var BroadNextDeparture = Backbone.Model.extend({
+  defaults: {
+    line_id: null,
+    line_name: null,
+    direction_id: null,
+    direction_name: null,
+    transport_type: null,
+    scheduled_time: null,
+  }
+});
+
+var BroadNextDepartureCollection = Backbone.Collection.extend({
+  model: BroadNextDeparture,
+  url: null,
+  parse: function(response) {
+    var departures = _.reduce(response.values, function(memo, item) {
+      memo.push({
+        line_id: item.platform.direction.line.line_id,
+        line_name: item.platform.direction.line.line_name,
+        direction_id: item.platform.direction.direction_id,
+        direction_name: item.platform.direction.direction_name,
+        transport_type: item.run.transport_type,
+        scheduled_time: moment(item.time_timetable_utc, moment.ISO_8601).format("HH:mm:ss")
+      });
+      return memo;
+    }, []);
+
+    var departures_sort = _.sortBy(
+      _.sortBy(departures, function(i) {
+        return i.direction_id;
+      }), function(i) {
+      return i.line_id;
+    });
+
+    return departures_sort;
+  }
+});
+
+var BroadNextDeparturesView = Backbone.View.extend({
+
+  template: _.template($("#broad-next-departures-template").html()),
+  initialize: function() {
+    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
+    this.collection.fetch();
+  },
+  render: function() {
+    this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
+    afterRender();
+  }
+});
+
+// Disruptions.
+var Disruption = Backbone.Model.extend({
+  defaults: {
+    mode: null,
+    title: null,
+    url: null,
+    description: null,
+    publishedOn: null,
+  }
+});
+
+var DisruptionsCollection = Backbone.Collection.extend({
+  model: Disruption,
+  url: null,
+  parse: function(response) {
+    var _one_month_ago = moment().subtract(1, 'months');
+    var _disruptions = _.reduce(response, function(memo, value, key) {
+      _.each(value, function(v, k) {
+        if (moment(v.publishedOn, moment.ISO_8601).isAfter(moment().subtract(1, 'months'))) {
+          v.mode = key;
+          v.publishedOn = moment(v.publishedOn, moment.ISO_8601).format("YYYY-MM-DD HH:mm:ss");
+          memo.push(v);
+        }
+      });
+      return memo;
+    }, []);
+
+    return _disruptions;
+  }
+});
+
+var DisruptionsView = Backbone.View.extend({
+
+  template: _.template($("#disruptions-template").html()),
+  initialize: function() {
+    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
+    this.collection.fetch();
+  },
+  render: function() {
+    this.$el.html(this.template({disruptions: this.collection.toJSON()}));
+    afterRender();
+  }
+});
+
+// Start router.
+router = new appRouter();
+Backbone.history.start();
+
 
 (function() {
     document.addEventListener('deviceready', function () {
         StatusBar.overlaysWebView( false );
         StatusBar.backgroundColorByHexString('#ffffff');
         StatusBar.styleDefault();
-        refreshLocation();
+        navigator.geolocation.getCurrentPosition(function(position) {
+
+        });
     }, false);
 }());
 
+$(".mdl-layout__drawer").on("click", function(e) {
+  $(this).removeClass("is-visible");
+});
 
-
-
-
-//'3e644583-fced-11e4-9dfa-061817890ad2', '1000433'
+var afterRender = function() {
+  if ($("ul.filter-list").length) {
+    componentHandler.upgradeElement($("ul.filter-list")[0]);
+  }
+}

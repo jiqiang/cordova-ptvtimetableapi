@@ -78,7 +78,7 @@
               <div class="mdl-card__title">
                 <h2 class="mdl-card__title-text">Any disruptions?</h2>
               </div>
-              <div class="mdl-card__supporting-text">See any transport disruptions may have an impact on your journeys.</div>
+              <div class="mdl-card__supporting-text">See any recently published transport disruptions may have an impact on your journeys.</div>
               <div class="mdl-card__actions mdl-card--border">
                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#disruptions">
                   Find disruptions
@@ -90,6 +90,21 @@
 </script>
 
 <script type="text/template" id="nearby-stops-template">
+<div class="mdl-grid">
+  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+    <!-- Left aligned menu below button -->
+    <button id="nearby-stops-filter" class="mdl-button mdl-js-button mdl-button--icon">
+      <i class="material-icons">filter_list</i>
+    </button>
+
+    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect filter-list" for="nearby-stops-filter">
+      <li class="mdl-menu__item">Some Action</li>
+      <li class="mdl-menu__item">Another Action</li>
+      <li disabled class="mdl-menu__item">Disabled Action</li>
+      <li class="mdl-menu__item">Yet Another Action</li>
+    </ul>
+  </div>
+</div>
 <div class="mdl-grid">
     <% _.each(nearby_stops, function(s) { %>
         <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--4-col-tablet mdl-cell--4-col-desktop">
@@ -144,17 +159,47 @@
 
 <script type="text/template" id="disruptions-template">
 <div class="mdl-grid">
-    <% _.each(disruptions, function(d) { %>
-        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-            <div class="mdl-card mdl-shadow--2dp">
-              <div class="mdl-card__supporting-text">
-              <p><%= d.title %></p>
-              <p><%= d.description %></p>
-              <p>Published on <%= d.publishedOn %></p>
-              </div>
+  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+    <!-- Left aligned menu below button -->
+    <button id="disruptions-filter" class="mdl-button mdl-js-button mdl-button--icon">
+      <i class="material-icons">filter_list</i>
+    </button>
+
+    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect filter-list" for="disruptions-filter">
+      <li class="mdl-menu__item"><a href="#disruptions">Show all</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/general">General</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/metro-bus">Metro bus</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/metro-tram">Metro tram</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/metro-train">Metro train</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/regional-bus">Regional bus</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/regional-coach">Regional coach</a></li>
+      <li class="mdl-menu__item"><a href="#disruptions/regional-train">Regional train</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="mdl-grid">
+    <% if (disruptions.length == 0) { %>
+      <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+          <div class="mdl-card mdl-shadow--2dp">
+            <div class="mdl-card__supporting-text">
+            <p>No disruptions.</p>
             </div>
-        </div>
-    <% }); %>
+          </div>
+      </div>
+    <% } else { %>
+      <% _.each(disruptions, function(d) { %>
+          <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__supporting-text">
+                <p><%= d.title %></p>
+                <p><%= d.description %></p>
+                <p>Published on <%= d.publishedOn %></p>
+                </div>
+              </div>
+          </div>
+      <% }); %>
+    <% } %>
 </div>
 </script>
 

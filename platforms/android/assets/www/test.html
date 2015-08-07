@@ -5,9 +5,11 @@
     <link rel="stylesheet" href="css/material.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <link rel="stylesheet" href="css/jquery.mobile-1.45.min.css" /> -->
-    <!-- <link rel="stylesheet" href="css/pure-min.css" /> -->
-    <link rel="stylesheet" href="css/index.css" />
+    <style>
+      .mdl-cell {
+        background-color: grey;
+      }
+    </style>
 </head>
 <body>
 
@@ -21,6 +23,7 @@
       <div class="mdl-layout-spacer"></div>
       <!-- Navigation. We hide it in small screens. -->
       <nav class="mdl-navigation mdl-layout--large-screen-only">
+        <a class="mdl-navigation__link" href="#">Home</a>
         <a class="mdl-navigation__link" href="#nearby-stops">Find nearby stops</a>
       </nav>
     </div>
@@ -28,15 +31,43 @@
   <div class="mdl-layout__drawer">
     <span class="mdl-layout-title">Title</span>
     <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="#">Home</a>
       <a class="mdl-navigation__link" href="#nearby-stops">Find nearby stops</a>
     </nav>
   </div>
   <main class="mdl-layout__content">
     <div class="page-content">
-        <!-- Your content goes here -->
-        <div id="preloader" class="mdl-progress mdl-js-progress mdl-progress__indeterminate progress-demo"></div>
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+          <div class="mdl-cell mdl-cell--1-col">1</div>
+        </div>
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">cell</div>
+        </div>
 
-        <div id="container-view"></div>
+        <button id="demo-menu-lower-left"
+        class="mdl-button mdl-js-button mdl-button--icon">
+  <i class="material-icons">more_vert</i>
+</button>
+
+<ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect"
+    for="demo-menu-lower-left">
+  <li class="mdl-menu__item">Some Action</li>
+  <li class="mdl-menu__item">Another Action</li>
+  <li disabled class="mdl-menu__item">Disabled Action</li>
+  <li class="mdl-menu__item">Yet Another Action</li>
+</ul>
+
 
     </div>
   </main>
@@ -45,90 +76,14 @@
 
 
 
-<!-- Start of template -->
-<script type="text/template" id="index-template">
-    <div class="mdl-grid">
-        <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet">
-            <div class="mdl-card mdl-shadow--2dp">
-              <div class="mdl-card__title">
-                <h2 class="mdl-card__title-text">Where can I go?</h2>
-              </div>
-              <div class="mdl-card__supporting-text">Firstly, you can find nearby stops to see where you can go.</div>
-              <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#nearby-stops">
-                  Find nearby stops
-                </a>
-              </div>
-            </div>
-        </div>
-    </div>
-</script>
 
-<script type="text/template" id="nearby-stops-template">
-<div class="mdl-grid">
-        <% _.each(nearby_stops, function(s) { %>
-            <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet">
-            <div class="mdl-card mdl-shadow--2dp ptv-list-card">
-              <div class="mdl-card__supporting-text">
-              [<%= s.transport_type %>]
-              <a href="#broad-next-departures/<%= s.stop_id %>/<%= PTVTimetableAPI.get_transport_type_id(s.transport_type) %>"><%= s.location_name %></a>
-              </div>
-            </div>
-            </div>
-        <% }); %>
-</div>
-</script>
-
-<script type="text/template" id="broad-next-departures-template">
-    <div class="mdl-grid">
-        <%
-            var _d = broad_next_departures;
-            var _n = 3;
-            var _ln = undefined;
-            var _dn = undefined;
-            var _ts = undefined;
-            var _list = _.groupBy(_d, function(el, idx) { return Math.floor(idx/_n)});
-            _list = _.toArray(_list);
-            _.each(_list, function(sld) {
-                _ln = _.first(sld).line_name;
-                _dn = _.first(sld).direction_name;
-                _ts = _.pluck(sld, "scheduled_time");
-
-        %>
-        <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet">
-            <div class="mdl-card mdl-shadow--2dp ptv-list-card">
-            <div class="mdl-card__supporting-text">
-                <table>
-                    <tbody>
-                    <tr class="mdl-data-table__cell--non-numeric"><td colspan="3"><%= _ln %></td></tr>
-                    <tr class="mdl-data-table__cell--non-numeric"><td colspan="3">To <%= _dn %></td></tr>
-                    <tr class="mdl-data-table__cell--non-numeric">
-                        <% _.each(_ts, function(t) { %>
-                            <td>[<%= t %>]</td>
-                        <% }); %>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            </div>
-            </div>
-        <% }); %>
-    </div>
-
-</script>
 
 
 
 <script src="cordova.js"></script>
-<script src="js/underscore-min.js"></script>
-<!-- <script src="js/jquery-1.10.2.min.js"></script> -->
+
 <script src="js/jquery-2.1.4.min.js"></script>
 <script src="js/material.min.js"></script>
-<script src="js/backbone-min.js"></script>
-<!-- <script src="js/jquery.mobile-1.4.5.min.js"></script> -->
-<script src="js/sha1.js"></script>
-<script src="js/moment.min.js"></script>
-<script src="js/PTVTimetableAPI.js"></script>
-<script src="js/test.js"></script>
+
 </body>
 </html>

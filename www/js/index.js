@@ -12,7 +12,7 @@ Ptver.Router = Backbone.Router.extend({
     "": "handleIndex",
     "nearby-stops": "handleNearbyStops",
     "broad-next-departures/:stopid/:transporttypeid": "handleBroadNextDepartures",
-    "disruptions": "handleDisruptions"
+    "disruptions(/:mode)": "handleDisruptions"
   },
 
   initialize: function() {
@@ -44,9 +44,10 @@ Ptver.Router = Backbone.Router.extend({
     this.container.render();
   },
 
-  handleDisruptions: function() {
+  handleDisruptions: function(mode) {
+    mode = _.isNull(mode) ? [] : [mode];
     var disruptions = new DisruptionsCollection();
-    disruptions.url = PTVTimetableAPI.disruptions([]);
+    disruptions.url = PTVTimetableAPI.disruptions(mode);
     disruptions.reset();
     this.container.childView = new DisruptionsView({collection: disruptions});
     this.container.render();
@@ -115,11 +116,12 @@ var NearbyStopsView = Backbone.View.extend({
 
   template: _.template($("#nearby-stops-template").html()),
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove', this.render, this);
+    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
     this.collection.fetch();
   },
   render: function() {
     this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
+    afterRender();
   }
 });
 
@@ -166,11 +168,12 @@ var BroadNextDeparturesView = Backbone.View.extend({
 
   template: _.template($("#broad-next-departures-template").html()),
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove', this.render, this);
+    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
     this.collection.fetch();
   },
   render: function() {
     this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
+    afterRender();
   }
 });
 
@@ -209,11 +212,12 @@ var DisruptionsView = Backbone.View.extend({
 
   template: _.template($("#disruptions-template").html()),
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove', this.render, this);
+    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
     this.collection.fetch();
   },
   render: function() {
     this.$el.html(this.template({disruptions: this.collection.toJSON()}));
+    afterRender();
   }
 });
 
@@ -236,3 +240,9 @@ var DisruptionsView = Backbone.View.extend({
 $(".mdl-layout__drawer").on("click", function(e) {
   $(this).removeClass("is-visible");
 });
+
+var afterRender = function() {
+  if ($("ul.filter-list").length) {
+    componentHandler.upgradeElement($("ul.filter-list")[0]);
+  }
+}
