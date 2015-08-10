@@ -3,18 +3,14 @@ var Ptver = {
   Model: {},
   Collection: {},
   Helper: {
-    afterRender: function() {
-      if ($("ul.filter-list").length) {
-        componentHandler.upgradeElement($("ul.filter-list")[0]);
-      }
-
-      if ($("[for='filter-switch']").length) {
-        componentHandler.upgradeElement($("[for='filter-switch']")[0]);
-      }
-    }
+    afterRender: function() {}
   },
 
-  appContainer: $("#container-view")
+  appContainer: $("#container-view"),
+
+  nearbyStopsTypes: ['bus','tram','train','nightrider','vline'],
+
+  numOfBroadNextDepartures: 3
 };
 
 // Router.
@@ -27,7 +23,8 @@ Ptver.Router = Backbone.Router.extend({
 
   routes: {
     "": "handleIndex",
-    "nearby-stops": "handleNearbyStops",
+    "nearby-stops-types": "handleNearbyStopsTypes",
+    "nearby-stops/:transport_type": "handleNearbyStops",
     "broad-next-departures/:stopid/:transporttypeid": "handleBroadNextDepartures",
     "disruptions(/:mode)": "handleDisruptions"
   },
@@ -41,24 +38,25 @@ Ptver.Router = Backbone.Router.extend({
     this.container.render();
   },
 
-  handleNearbyStops: function() {
-    var that = this;
+  handleNearbyStops: function(transport_type) {
     navigator.geolocation.getCurrentPosition(function(position) {
-      var endPoint = PTVTimetableAPI.stopsNearby(position.coords.latitude, position.coords.longitude);
-      var stopsList = new NearbyStopsCollection();
-      stopsList.url = endPoint;
-      stopsList.reset();
-      that.container.childView = new NearbyStopsView({collection: stopsList});
-      that.container.render();
+      localStorage.ptver_device_latitude = position.coords.latitude;
+      localStorage.ptver_device_longitude = position.coords.longitude;
+      var stopsList = new NearbyStopsCollection({transport_type: transport_type, latitude: position.coords.latitude, longitude: position.coords.longitude});
+      var nearbyStopsView = new NearbyStopsView({collection: stopsList});
+      stopsList.fetch();
     });
   },
 
+  handleNearbyStopsTypes: function() {
+    var template = _.template($("#nearby-stops-types-template").html());
+    $("#container-view").html(template({}));
+  },
+
   handleBroadNextDepartures: function(stopid, transporttypeid) {
-    var departures = new BroadNextDepartureCollection();
-    departures.url = PTVTimetableAPI.broadNextDepartures(transporttypeid, stopid, 3);
-    departures.reset();
-    this.container.childView = new BroadNextDeparturesView({collection: departures});
-    this.container.render();
+    var departures = new BroadNextDepartureCollection({transportTypeId: transporttypeid, stopId: stopid});
+    var broadNextDepartureView = new BroadNextDeparturesView({collection: departures});
+    departures.fetch();
   },
 
   handleDisruptions: function(mode) {
@@ -115,26 +113,33 @@ var NearbyStop = Backbone.Model.extend({
 
 var NearbyStopsCollection = Backbone.Collection.extend({
   model: NearbyStop,
+  transport_type: null,
   url: null,
+
+  initialize: function(options) {
+    this.transport_type = options.transport_type;
+    this.url = PTVTimetableAPI.stopsNearby(options.latitude, options.longitude);
+  },
+
   parse: function(response) {
 
-    var _stopList = _.reduce(response, function(memo, item) {
-      memo.push(item.result);
-      return memo;
-    }, []);
+    var _stopList = _.pluck(response, 'result');
 
-    _stopList = _.sortBy(_stopList, "transport_type");
+    _stopList = _.where(_stopList, {transport_type: this.transport_type});
+
     return _stopList;
   }
 });
 
 var NearbyStopsView = Backbone.View.extend({
+  el: Ptver.appContainer,
 
   template: _.template($("#nearby-stops-template").html()),
+
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
-    this.collection.fetch();
+    this.listenTo(this.collection, 'sync', this.render, this);
   },
+
   render: function() {
     this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
     Ptver.Helper.afterRender();
@@ -154,8 +159,21 @@ var BroadNextDeparture = Backbone.Model.extend({
 });
 
 var BroadNextDepartureCollection = Backbone.Collection.extend({
+
   model: BroadNextDeparture,
+
+  transportTypeId: null,
+
+  stopId: null,
+
   url: null,
+
+  initialize: function(options) {
+    this.transportTypeId = options.transportTypeId;
+    this.stopId = options.stopId;
+    this.url = PTVTimetableAPI.broadNextDepartures(this.transportTypeId, this.stopId, Ptver.numOfBroadNextDepartures)
+  },
+
   parse: function(response) {
     var departures = _.reduce(response.values, function(memo, item) {
       memo.push({
@@ -182,15 +200,49 @@ var BroadNextDepartureCollection = Backbone.Collection.extend({
 
 var BroadNextDeparturesView = Backbone.View.extend({
 
+  el: Ptver.appContainer,
+
+  mapContainerWidth: null,
+
+  mapContainerHeight: null,
+
   template: _.template($("#broad-next-departures-template").html()),
-  initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
-    this.collection.fetch();
+
+  staticMapUrl: function (width, height) {
+    var url = "https://maps.googleapis.com/maps/api/staticmap?zoom=15&scale=1";
+    url += "&center=" + localStorage.ptver_device_latitude + "," + localStorage.ptver_device_longitude;
+    url += "&size=" + width + "x" + height;
+    url += "&markers=color:blue%7Clabel:U%7C" + localStorage.ptver_device_latitude + "," + localStorage.ptver_device_longitude;
+    return url;
   },
+
+  initialize: function() {
+    var that = this;
+    this.listenTo(this.collection, 'sync', this.render, this);
+
+    var doit;
+    $(window).on("resize", function(e) {
+      clearTimeout(doit);
+      doit = setTimeout(function() {
+        that.render();
+      }, 100);
+    });
+  },
+
   render: function() {
     this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
+
+    this.mapContainerWidth = $($("#broad-next-departures-map").parent()).width();
+    this.mapContainerHeight = parseInt(this.mapContainerWidth * 0.6);
+
+    $("#broad-next-departures-map")
+    .attr('src', this.staticMapUrl(this.mapContainerWidth, this.mapContainerHeight))
+    .css("margin-left", "auto")
+    .css("margin-right", "auto");
+
     Ptver.Helper.afterRender();
   }
+
 });
 
 // Disruptions.

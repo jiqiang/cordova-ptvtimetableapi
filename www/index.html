@@ -23,7 +23,7 @@
       <!-- Navigation. We hide it in small screens. -->
       <nav class="mdl-navigation mdl-layout--large-screen-only">
         <a class="mdl-navigation__link" href="#">Home</a>
-        <a class="mdl-navigation__link" href="#nearby-stops">Find nearby stops</a>
+        <a class="mdl-navigation__link" href="#nearby-stops-types">Find nearby stops</a>
         <a class="mdl-navigation__link" href="#disruptions">Find disruptions</a>
       </nav>
     </div>
@@ -32,7 +32,7 @@
     <span class="mdl-layout-title">Ptver</span>
     <nav class="mdl-navigation">
         <a class="mdl-navigation__link" href="#">Home</a>
-        <a class="mdl-navigation__link" href="#nearby-stops">Find nearby stops</a>
+        <a class="mdl-navigation__link" href="#nearby-stops-types">Find nearby stops</a>
         <a class="mdl-navigation__link" href="#disruptions">Find disruptions</a>
     </nav>
   </div>
@@ -64,7 +64,7 @@
               </div>
               <div class="mdl-card__supporting-text">See where you can go by searching nearby stops.</div>
               <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#nearby-stops">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="#nearby-stops-types">
                   Find nearby stops
                 </a>
               </div>
@@ -90,29 +90,12 @@
 </script>
 
 <script type="text/template" id="nearby-stops-template">
-<div class="mdl-grid">
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-    <!-- Left aligned menu below button -->
-    <button id="nearby-stops-filter" class="mdl-button mdl-js-button mdl-button--icon">
-      <i class="material-icons">filter_list</i>
-    </button>
-
-    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect filter-list" for="nearby-stops-filter">
-      <li class="mdl-menu__item">Some Action</li>
-      <li class="mdl-menu__item">Another Action</li>
-      <li disabled class="mdl-menu__item">Disabled Action</li>
-      <li class="mdl-menu__item">Yet Another Action</li>
-    </ul>
-  </div>
-</div>
-<div class="mdl-grid">
+<div class="mdl-grid mdl-grid--no-spacing">
     <% _.each(nearby_stops, function(s) { %>
-        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--4-col-tablet mdl-cell--4-col-desktop">
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
             <a href="#broad-next-departures/<%= s.stop_id %>/<%= PTVTimetableAPI.get_transport_type_id(s.transport_type) %>">
-            <div class="mdl-card mdl-shadow--2dp nearby-stop-card">
-              <div class="mdl-card__supporting-text">
-              <%= s.transport_type %>: <%= s.location_name %>
-              </div>
+            <div class="mdl-card list-show-border">
+              <div class="mdl-card__supporting-text"><%= s.location_name %></div>
             </div>
             </a>
         </div>
@@ -120,7 +103,30 @@
 </div>
 </script>
 
+<script type="text/template" id="nearby-stops-types-template">
+<div class="mdl-grid mdl-grid--no-spacing">
+  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+    <div class="mdl-card"><div class="mdl-card__supporting-text">Stop types</div></div>
+  </div>
+  <% _.each(Ptver.nearbyStopsTypes, function(t) { %>
+    <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+      <a href="#nearby-stops/<%= t %>">
+      <div class="mdl-card list-show-border">
+        <div class="mdl-card__supporting-text"><%= t %></div>
+      </div>
+      </a>
+    </div>
+  <% }); %>
+</div>
+</script>
+
 <script type="text/template" id="broad-next-departures-template">
+  <div class="mdl-grid mdl-grid--no-spacing">
+    <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+      <img id="broad-next-departures-map" src="">
+    </div>
+  </div>
+
     <div class="mdl-grid">
         <%
             var _d = broad_next_departures;
