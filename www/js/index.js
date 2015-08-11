@@ -10,7 +10,17 @@ var Ptver = {
 
   nearbyStopsTypes: ['bus','tram','train','nightrider','vline'],
 
-  numOfBroadNextDepartures: 3
+  numOfBroadNextDepartures: 3,
+
+  disruptionCategories: [
+    {key: 'general', name: 'General'},
+    {key: 'metro-bus', name: 'Metro bus'},
+    {key: 'metro-tram', name: 'Metro tram'},
+    {key: 'metro-train', name: 'Metro train'},
+    {key: 'regional-bus', name: 'Regional bus'},
+    {key: 'regional-coach', name: 'Regional coach'},
+    {key: 'regional-train', name: 'Regional train'},
+  ]
 };
 
 // Router.
@@ -26,6 +36,7 @@ Ptver.Router = Backbone.Router.extend({
     "nearby-stops-types": "handleNearbyStopsTypes",
     "nearby-stops/:transport_type": "handleNearbyStops",
     "broad-next-departures/:stopid/:transporttypeid": "handleBroadNextDepartures",
+    "disruptions": "handleDisruptionCategories",
     "disruptions(/:mode)": "handleDisruptions"
   },
 
@@ -57,6 +68,11 @@ Ptver.Router = Backbone.Router.extend({
     var departures = new BroadNextDepartureCollection({transportTypeId: transporttypeid, stopId: stopid});
     var broadNextDepartureView = new BroadNextDeparturesView({collection: departures});
     departures.fetch();
+  },
+
+  handleDisruptionCategories: function() {
+    var template = _.template($("#disruption-categories-template").html());
+    $("#container-view").html(template({}));
   },
 
   handleDisruptions: function(mode) {
@@ -208,38 +224,13 @@ var BroadNextDeparturesView = Backbone.View.extend({
 
   template: _.template($("#broad-next-departures-template").html()),
 
-  staticMapUrl: function (width, height) {
-    var url = "https://maps.googleapis.com/maps/api/staticmap?zoom=15&scale=1";
-    url += "&center=" + localStorage.ptver_device_latitude + "," + localStorage.ptver_device_longitude;
-    url += "&size=" + width + "x" + height;
-    url += "&markers=color:blue%7Clabel:U%7C" + localStorage.ptver_device_latitude + "," + localStorage.ptver_device_longitude;
-    return url;
-  },
-
   initialize: function() {
     var that = this;
     this.listenTo(this.collection, 'sync', this.render, this);
-
-    var doit;
-    $(window).on("resize", function(e) {
-      clearTimeout(doit);
-      doit = setTimeout(function() {
-        that.render();
-      }, 100);
-    });
   },
 
   render: function() {
     this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
-
-    this.mapContainerWidth = $($("#broad-next-departures-map").parent()).width();
-    this.mapContainerHeight = parseInt(this.mapContainerWidth * 0.6);
-
-    $("#broad-next-departures-map")
-    .attr('src', this.staticMapUrl(this.mapContainerWidth, this.mapContainerHeight))
-    .css("margin-left", "auto")
-    .css("margin-right", "auto");
-
     Ptver.Helper.afterRender();
   }
 
@@ -269,17 +260,9 @@ var DisruptionsCollection = Backbone.Collection.extend({
   },
 
   populate: function() {
-    if (this.mode == null) {
-      this.url = PTVTimetableAPI.disruptions([]);
-      var that = this;
-      this.fetch({remove: true}).then(function() {
-        localStorage.ptver_disruptions = JSON.stringify(that.toJSON());
-      });
-    }
-    else {
-      var _dps = JSON.parse(localStorage.ptver_disruptions);
-      this.reset(_.where(_dps, {mode: this.mode}));
-    }
+    this.url = PTVTimetableAPI.disruptions([this.mode]);
+    var that = this;
+    this.fetch({remove: true});
   },
 
   parse: function(response) {
@@ -288,7 +271,7 @@ var DisruptionsCollection = Backbone.Collection.extend({
       _.each(value, function(v, k) {
         if (moment(v.publishedOn, moment.ISO_8601).isAfter(moment().subtract(1, 'months'))) {
           v.mode = key;
-          v.publishedOn = moment(v.publishedOn, moment.ISO_8601).format("YYYY-MM-DD HH:mm:ss");
+          v.publishedOn = moment(v.publishedOn, moment.ISO_8601).format("MMM D h:mmA");
           memo.push(v);
         }
       });
@@ -328,6 +311,11 @@ var DisruptionsView = Backbone.View.extend({
     // Start router.
     Ptver.router = new Ptver.Router();
     Backbone.history.start();
+
+    $("#refresh-ptviewer").on("click", function(e) {
+      var _route = Backbone.history.getFragment();
+      Ptver.router.navigate(_route, {trigger: true, replace: true});
+    });
 
 }());
 

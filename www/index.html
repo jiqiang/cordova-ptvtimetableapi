@@ -20,12 +20,9 @@
       <span class="mdl-layout-title">Ptver</span>
       <!-- Add spacer, to align navigation to the right -->
       <div class="mdl-layout-spacer"></div>
-      <!-- Navigation. We hide it in small screens. -->
-      <nav class="mdl-navigation mdl-layout--large-screen-only">
-        <a class="mdl-navigation__link" href="#">Home</a>
-        <a class="mdl-navigation__link" href="#nearby-stops-types">Find nearby stops</a>
-        <a class="mdl-navigation__link" href="#disruptions">Find disruptions</a>
-      </nav>
+      <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+        <i class="material-icons">refresh</i>
+      </label>
     </div>
   </header>
   <div class="mdl-layout__drawer">
@@ -121,12 +118,6 @@
 </script>
 
 <script type="text/template" id="broad-next-departures-template">
-  <div class="mdl-grid mdl-grid--no-spacing">
-    <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-      <img id="broad-next-departures-map" src="">
-    </div>
-  </div>
-
     <div class="mdl-grid">
         <%
             var _d = broad_next_departures;
@@ -163,37 +154,24 @@
     </div>
 </script>
 
+<script type="text/template" id="disruption-categories-template">
+<div class="mdl-grid mdl-grid--no-spacing">
+  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+    <div class="mdl-card"><div class="mdl-card__supporting-text">Disruption categories</div></div>
+  </div>
+  <% _.each(Ptver.disruptionCategories, function(c) { %>
+    <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+      <a href="#disruptions/<%= c.key %>">
+      <div class="mdl-card list-show-border">
+        <div class="mdl-card__supporting-text"><%= c.name %></div>
+      </div>
+      </a>
+    </div>
+  <% }); %>
+</div>
+</script>
+
 <script type="text/template" id="disruptions-template">
-
-<div class="mdl-grid">
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="filter-switch">
-      <input type="checkbox" id="filter-switch" class="mdl-switch__input" />
-      <span class="mdl-switch__label"></span>
-    </label>
-  </div>
-</div>
-
-<div class="mdl-grid">
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-    <!-- Left aligned menu below button -->
-    <button id="disruptions-filter" class="mdl-button mdl-js-button mdl-button--icon">
-      <i class="material-icons">filter_list</i>
-    </button>
-
-    <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect filter-list" for="disruptions-filter">
-      <li class="mdl-menu__item"><a href="#disruptions">Show all</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/general">General</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/metro-bus">Metro bus</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/metro-tram">Metro tram</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/metro-train">Metro train</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/regional-bus">Regional bus</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/regional-coach">Regional coach</a></li>
-      <li class="mdl-menu__item"><a href="#disruptions/regional-train">Regional train</a></li>
-    </ul>
-  </div>
-</div>
-
 <div class="mdl-grid">
     <% if (disruptions.length == 0) { %>
       <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
@@ -206,11 +184,17 @@
     <% } else { %>
       <% _.each(disruptions, function(d) { %>
           <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-              <div class="mdl-card mdl-shadow--2dp">
+              <div class="mdl-card mdl-shadow--2dp disruption">
+                <div class="mdl-card__title">
+                  <h2 class="mdl-card__title-text"><%= d.publishedOn %></h2>
+                </div>
                 <div class="mdl-card__supporting-text">
-                <p><%= d.title %></p>
-                <p><%= d.description %></p>
-                <p>Published on <%= d.publishedOn %></p>
+                  <p><%= d.description %></p>
+                </div>
+                <div class="mdl-card__actions mdl-card--border">
+                  <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="<%= d.url %>" target="_blank">
+                    View website
+                  </a>
                 </div>
               </div>
           </div>
