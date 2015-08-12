@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ptver</title>
+    <title>Ptviewer</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/material.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -115,7 +115,7 @@
   <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
     <div class="mdl-card"><div class="mdl-card__supporting-text">Stop types</div></div>
   </div>
-  <% _.each(Ptver.nearbyStopsTypes, function(t) { %>
+  <% _.each(Ptviewer.nearbyStopsTypes, function(t) { %>
     <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
       <a href="#nearby-stops/<%= t %>">
       <div class="mdl-card list-show-border">
@@ -169,7 +169,7 @@
   <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
     <div class="mdl-card"><div class="mdl-card__supporting-text">Disruption categories</div></div>
   </div>
-  <% _.each(Ptver.disruptionCategories, function(c) { %>
+  <% _.each(Ptviewer.disruptionCategories, function(c) { %>
     <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
       <a href="#disruptions/<%= c.key %>">
       <div class="mdl-card list-show-border">
