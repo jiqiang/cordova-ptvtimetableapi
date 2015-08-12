@@ -1,84 +1,163 @@
-// Router.
-var appRouter = Backbone.Router.extend({
+var Ptver = {
+  View: {},
+  Model: {},
+  Collection: {},
+  Helper: {
+    afterRender: function() {}
+  },
 
-  container: null,
-  index: null,
-  nearby_stops: null,
-  broad_next_departures: null,
+  appContainer: $("#container-view"),
+
+  nearbyStopsTypes: ['bus','tram','train','nightrider','vline'],
+
+  numOfBroadNextDepartures: 3,
+
+  disruptionCategories: [
+    {key: 'general', name: 'General'},
+    {key: 'metro-bus', name: 'Metro bus'},
+    {key: 'metro-tram', name: 'Metro tram'},
+    {key: 'metro-train', name: 'Metro train'},
+    {key: 'regional-bus', name: 'Regional bus'},
+    {key: 'regional-coach', name: 'Regional coach'},
+    {key: 'regional-train', name: 'Regional train'},
+  ],
+
+  routerHistory: []
+};
+
+// Router.
+Ptver.Router = Backbone.Router.extend({
+
+  execute: function(callback, args, name) {
+    this.handleHeaderActions(name);
+    if (callback) callback.apply(this, args);
+  },
 
   routes: {
     "": "handleIndex",
-    "nearby-stops": "handleNearbyStops",
+    "nearby-stops-types": "handleNearbyStopsTypes",
+    "nearby-stops/:transport_type": "handleNearbyStops",
     "broad-next-departures/:stopid/:transporttypeid": "handleBroadNextDepartures",
+    "disruptions": "handleDisruptionCategories",
     "disruptions(/:mode)": "handleDisruptions"
   },
 
   initialize: function() {
-    this.container = new ContainerView();
+    Ptver.headerActionView = new Ptver.View.HeaderActionsView();
+  },
+
+  handleHeaderActions: function(name) {
+    if (name == "handleIndex") {
+      $("#home-ptviewer, #back-ptviewer").hide();
+    } else {
+      $("#home-ptviewer, #back-ptviewer").show();
+    }
+  },
+
+  handleRouterHistory: function() {
+    if (Backbone.history.getFragment() == "") {
+      Ptver.routerHistory = [];
+    }
+
+    if (_.indexOf(Ptver.routerHistory, Backbone.history.getFragment()) == -1) {
+      Ptver.routerHistory.push(Backbone.history.getFragment());
+    }
   },
 
   handleIndex: function() {
-    this.container.childView = null;
-    this.container.render();
+    new Ptver.View.IndexView();
   },
 
-  handleNearbyStops: function() {
-    var that = this;
+  handleNearbyStops: function(transport_type) {
     navigator.geolocation.getCurrentPosition(function(position) {
-      var endPoint = PTVTimetableAPI.stopsNearby(position.coords.latitude, position.coords.longitude);
-      var stopsList = new NearbyStopsCollection();
-      stopsList.url = endPoint;
-      stopsList.reset();
-      that.container.childView = new NearbyStopsView({collection: stopsList});
-      that.container.render();
+      localStorage.ptver_device_latitude = position.coords.latitude;
+      localStorage.ptver_device_longitude = position.coords.longitude;
+      var stopsList = new NearbyStopsCollection({transport_type: transport_type, latitude: position.coords.latitude, longitude: position.coords.longitude});
+      var nearbyStopsView = new NearbyStopsView({collection: stopsList});
+      stopsList.fetch();
     });
   },
 
+  handleNearbyStopsTypes: function() {
+    var template = _.template($("#nearby-stops-types-template").html());
+    $("#container-view").html(template({}));
+  },
+
   handleBroadNextDepartures: function(stopid, transporttypeid) {
-    var departures = new BroadNextDepartureCollection();
-    departures.url = PTVTimetableAPI.broadNextDepartures(transporttypeid, stopid, 3);
-    departures.reset();
-    this.container.childView = new BroadNextDeparturesView({collection: departures});
-    this.container.render();
+    var departures = new BroadNextDepartureCollection({transportTypeId: transporttypeid, stopId: stopid});
+    var broadNextDepartureView = new BroadNextDeparturesView({collection: departures});
+    departures.fetch();
+  },
+
+  handleDisruptionCategories: function() {
+    var template = _.template($("#disruption-categories-template").html());
+    $("#container-view").html(template({}));
   },
 
   handleDisruptions: function(mode) {
-    mode = _.isNull(mode) ? [] : [mode];
-    var disruptions = new DisruptionsCollection();
-    disruptions.url = PTVTimetableAPI.disruptions(mode);
-    disruptions.reset();
-    this.container.childView = new DisruptionsView({collection: disruptions});
-    this.container.render();
+    var disruptions = new DisruptionsCollection({mode: mode});
+    var disruptionsView = new DisruptionsView({collection: disruptions});
+    disruptions.populate();
   }
-
 });
 
-// Container view.
-var ContainerView = Backbone.View.extend({
+// Index view.
+Ptver.View.IndexView = Backbone.View.extend({
 
   el: $("#container-view"),
 
   template: _.template($("#index-template").html()),
 
-  childView: null,
+  initialize: function() {
+    this.render();
+  },
 
   render: function() {
     var that = this;
-
     // Always perform API health check.
     $.get(PTVTimetableAPI.healthCheck(), function(response) {
       if (_.every(response, _.identity)) {
-        if (that.childView == null) {
-          that.$el.html(that.template({}));
-        }
-        else {
-          that.$el.html(that.childView.$el);
-        }
+        that.$el.html(that.template({}));
       }
       else {
         that.$el.html(_.template($("#ptv-service-down-template").html()));
       }
     });
+  }
+});
+
+// Index view.
+Ptver.View.HeaderActionsView = Backbone.View.extend({
+
+  el: $("#header-actions"),
+
+  hideHeaderButton: false,
+
+  template: _.template($("#header-actions-template").html()),
+
+  events: {
+    "click #home-ptviewer": "onClickHeaderHomeButton",
+    "click #back-ptviewer": "onClickHeaderBackButton"
+  },
+
+  onClickHeaderHomeButton: function(e) {
+    Ptver.router.navigate("", {trigger: true, replace: true});
+  },
+
+  onClickHeaderBackButton: function(e) {
+    window.history.back();
+  },
+
+  initialize: function(options) {
+    if (options != undefined) {
+      this.hideHeaderButton = options.hideHeaderButton;
+    }
+
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({}));
   }
 });
 
@@ -97,29 +176,36 @@ var NearbyStop = Backbone.Model.extend({
 
 var NearbyStopsCollection = Backbone.Collection.extend({
   model: NearbyStop,
+  transport_type: null,
   url: null,
+
+  initialize: function(options) {
+    this.transport_type = options.transport_type;
+    this.url = PTVTimetableAPI.stopsNearby(options.latitude, options.longitude);
+  },
+
   parse: function(response) {
 
-    var _stopList = _.reduce(response, function(memo, item) {
-      memo.push(item.result);
-      return memo;
-    }, []);
+    var _stopList = _.pluck(response, 'result');
 
-    _stopList = _.sortBy(_stopList, "transport_type");
+    _stopList = _.where(_stopList, {transport_type: this.transport_type});
+
     return _stopList;
   }
 });
 
 var NearbyStopsView = Backbone.View.extend({
+  el: Ptver.appContainer,
 
   template: _.template($("#nearby-stops-template").html()),
+
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
-    this.collection.fetch();
+    this.listenTo(this.collection, 'sync', this.render, this);
   },
+
   render: function() {
     this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
-    afterRender();
+    Ptver.Helper.afterRender();
   }
 });
 
@@ -136,8 +222,21 @@ var BroadNextDeparture = Backbone.Model.extend({
 });
 
 var BroadNextDepartureCollection = Backbone.Collection.extend({
+
   model: BroadNextDeparture,
+
+  transportTypeId: null,
+
+  stopId: null,
+
   url: null,
+
+  initialize: function(options) {
+    this.transportTypeId = options.transportTypeId;
+    this.stopId = options.stopId;
+    this.url = PTVTimetableAPI.broadNextDepartures(this.transportTypeId, this.stopId, Ptver.numOfBroadNextDepartures)
+  },
+
   parse: function(response) {
     var departures = _.reduce(response.values, function(memo, item) {
       memo.push({
@@ -164,15 +263,24 @@ var BroadNextDepartureCollection = Backbone.Collection.extend({
 
 var BroadNextDeparturesView = Backbone.View.extend({
 
+  el: Ptver.appContainer,
+
+  mapContainerWidth: null,
+
+  mapContainerHeight: null,
+
   template: _.template($("#broad-next-departures-template").html()),
+
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
-    this.collection.fetch();
+    var that = this;
+    this.listenTo(this.collection, 'sync', this.render, this);
   },
+
   render: function() {
     this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
-    afterRender();
+    Ptver.Helper.afterRender();
   }
+
 });
 
 // Disruptions.
@@ -187,15 +295,30 @@ var Disruption = Backbone.Model.extend({
 });
 
 var DisruptionsCollection = Backbone.Collection.extend({
+
+  mode: null,
+
   model: Disruption,
+
   url: null,
+
+  initialize: function(options) {
+    this.mode = options.mode;
+  },
+
+  populate: function() {
+    this.url = PTVTimetableAPI.disruptions([this.mode]);
+    var that = this;
+    this.fetch({remove: true});
+  },
+
   parse: function(response) {
     var _one_month_ago = moment().subtract(1, 'months');
     var _disruptions = _.reduce(response, function(memo, value, key) {
       _.each(value, function(v, k) {
         if (moment(v.publishedOn, moment.ISO_8601).isAfter(moment().subtract(1, 'months'))) {
           v.mode = key;
-          v.publishedOn = moment(v.publishedOn, moment.ISO_8601).format("YYYY-MM-DD HH:mm:ss");
+          v.publishedOn = moment(v.publishedOn, moment.ISO_8601).format("MMM D h:mmA");
           memo.push(v);
         }
       });
@@ -208,21 +331,19 @@ var DisruptionsCollection = Backbone.Collection.extend({
 
 var DisruptionsView = Backbone.View.extend({
 
+  el: Ptver.appContainer,
+
   template: _.template($("#disruptions-template").html()),
+
   initialize: function() {
-    this.listenTo(this.collection, 'reset add change remove update sync', this.render, this);
-    this.collection.fetch();
+    this.listenTo(this.collection, 'reset sync', this.render, this);
   },
+
   render: function() {
     this.$el.html(this.template({disruptions: this.collection.toJSON()}));
-    afterRender();
+    Ptver.Helper.afterRender();
   }
 });
-
-// Start router.
-router = new appRouter();
-Backbone.history.start();
-
 
 (function() {
     document.addEventListener('deviceready', function () {
@@ -233,14 +354,15 @@ Backbone.history.start();
 
         });
     }, false);
+
+    // Start router.
+    Ptver.router = new Ptver.Router();
+    Backbone.history.start();
+
 }());
 
 $(".mdl-layout__drawer").on("click", function(e) {
   $(this).removeClass("is-visible");
 });
 
-var afterRender = function() {
-  if ($("ul.filter-list").length) {
-    componentHandler.upgradeElement($("ul.filter-list")[0]);
-  }
-}
+
