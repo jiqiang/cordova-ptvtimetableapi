@@ -20,16 +20,18 @@ var Ptver = {
     {key: 'regional-bus', name: 'Regional bus'},
     {key: 'regional-coach', name: 'Regional coach'},
     {key: 'regional-train', name: 'Regional train'},
-  ]
+  ],
+
+  routerHistory: []
 };
 
 // Router.
 Ptver.Router = Backbone.Router.extend({
 
-  container: null,
-  index: null,
-  nearby_stops: null,
-  broad_next_departures: null,
+  execute: function(callback, args, name) {
+    this.handleHeaderActions(name);
+    if (callback) callback.apply(this, args);
+  },
 
   routes: {
     "": "handleIndex",
@@ -41,12 +43,29 @@ Ptver.Router = Backbone.Router.extend({
   },
 
   initialize: function() {
-    this.container = new Ptver.View.ContainerView();
+    Ptver.headerActionView = new Ptver.View.HeaderActionsView();
+  },
+
+  handleHeaderActions: function(name) {
+    if (name == "handleIndex") {
+      $("#home-ptviewer, #back-ptviewer").hide();
+    } else {
+      $("#home-ptviewer, #back-ptviewer").show();
+    }
+  },
+
+  handleRouterHistory: function() {
+    if (Backbone.history.getFragment() == "") {
+      Ptver.routerHistory = [];
+    }
+
+    if (_.indexOf(Ptver.routerHistory, Backbone.history.getFragment()) == -1) {
+      Ptver.routerHistory.push(Backbone.history.getFragment());
+    }
   },
 
   handleIndex: function() {
-    this.container.childView = null;
-    this.container.render();
+    new Ptver.View.IndexView();
   },
 
   handleNearbyStops: function(transport_type) {
@@ -82,35 +101,63 @@ Ptver.Router = Backbone.Router.extend({
   }
 });
 
-// Container view.
-Ptver.View.ContainerView = Backbone.View.extend({
+// Index view.
+Ptver.View.IndexView = Backbone.View.extend({
 
   el: $("#container-view"),
 
   template: _.template($("#index-template").html()),
 
-  childView: null,
+  initialize: function() {
+    this.render();
+  },
 
   render: function() {
     var that = this;
-
     // Always perform API health check.
     $.get(PTVTimetableAPI.healthCheck(), function(response) {
-
       if (_.every(response, _.identity)) {
-
-        if (that.childView == null) {
-          that.$el.html(that.template({}));
-        }
-        else {
-          that.$el.html(that.childView.$el);
-        }
-
+        that.$el.html(that.template({}));
       }
       else {
         that.$el.html(_.template($("#ptv-service-down-template").html()));
       }
     });
+  }
+});
+
+// Index view.
+Ptver.View.HeaderActionsView = Backbone.View.extend({
+
+  el: $("#header-actions"),
+
+  hideHeaderButton: false,
+
+  template: _.template($("#header-actions-template").html()),
+
+  events: {
+    "click #home-ptviewer": "onClickHeaderHomeButton",
+    "click #back-ptviewer": "onClickHeaderBackButton"
+  },
+
+  onClickHeaderHomeButton: function(e) {
+    Ptver.router.navigate("", {trigger: true, replace: true});
+  },
+
+  onClickHeaderBackButton: function(e) {
+    window.history.back();
+  },
+
+  initialize: function(options) {
+    if (options != undefined) {
+      this.hideHeaderButton = options.hideHeaderButton;
+    }
+
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({}));
   }
 });
 
@@ -311,11 +358,6 @@ var DisruptionsView = Backbone.View.extend({
     // Start router.
     Ptver.router = new Ptver.Router();
     Backbone.history.start();
-
-    $("#refresh-ptviewer").on("click", function(e) {
-      var _route = Backbone.history.getFragment();
-      Ptver.router.navigate(_route, {trigger: true, replace: true});
-    });
 
 }());
 

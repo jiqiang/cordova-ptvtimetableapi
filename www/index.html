@@ -17,18 +17,7 @@
       <span class="mdl-layout-title">Ptver</span>
       <!-- Add spacer, to align navigation to the right -->
       <div class="mdl-layout-spacer"></div>
-      <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-        <i class="material-icons">home</i>
-      </label>
-      <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-        <i class="material-icons">arrow_back</i>
-      </label>
-      <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-        <i class="material-icons">refresh</i>
-      </label>
-      <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-        <i class="material-icons">close</i>
-      </label>
+      <div id="header-actions"></div>
     </div>
   </header>
   <div class="mdl-layout__drawer">
@@ -56,6 +45,21 @@
             </div>
         </div>
     </div>
+</script>
+
+<script type="text/template" id="header-actions-template">
+  <label id="home-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+    <i class="material-icons">home</i>
+  </label>
+  <label id="back-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+    <i class="material-icons">arrow_back</i>
+  </label>
+  <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+    <i class="material-icons">refresh</i>
+  </label>
+  <label id="close-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+    <i class="material-icons">close</i>
+  </label>
 </script>
 
 <script type="text/template" id="index-template">
