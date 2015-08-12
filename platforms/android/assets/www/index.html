@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ptver</title>
+    <title>Ptviewer</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/material.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
       <!-- Title -->
-      <span class="mdl-layout-title">Ptviewer</span>
+      <span class="mdl-layout-title"></span>
       <!-- Add spacer, to align navigation to the right -->
       <div class="mdl-layout-spacer"></div>
       <div id="header-actions"></div>
@@ -49,16 +49,16 @@
 
 <script type="text/template" id="header-actions-template">
   <label id="home-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-    <i class="material-icons">home</i>
+    <i class="material-icons md-18">home</i>
   </label>
   <label id="back-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-    <i class="material-icons">arrow_back</i>
+    <i class="material-icons md-18">&#xE5C4;</i>
   </label>
   <label id="refresh-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-    <i class="material-icons">refresh</i>
+    <i class="material-icons md-18">refresh</i>
   </label>
   <label id="close-ptviewer" class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-    <i class="material-icons">close</i>
+    <i class="material-icons md-18">close</i>
   </label>
 </script>
 
@@ -115,7 +115,7 @@
   <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
     <div class="mdl-card"><div class="mdl-card__supporting-text">Stop types</div></div>
   </div>
-  <% _.each(Ptver.nearbyStopsTypes, function(t) { %>
+  <% _.each(Ptviewer.nearbyStopsTypes, function(t) { %>
     <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
       <a href="#nearby-stops/<%= t %>">
       <div class="mdl-card list-show-border">
@@ -169,7 +169,7 @@
   <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
     <div class="mdl-card"><div class="mdl-card__supporting-text">Disruption categories</div></div>
   </div>
-  <% _.each(Ptver.disruptionCategories, function(c) { %>
+  <% _.each(Ptviewer.disruptionCategories, function(c) { %>
     <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
       <a href="#disruptions/<%= c.key %>">
       <div class="mdl-card list-show-border">

@@ -1,4 +1,4 @@
-var Ptver = {
+var Ptviewer = {
   View: {},
   Model: {},
   Collection: {},
@@ -20,13 +20,11 @@ var Ptver = {
     {key: 'regional-bus', name: 'Regional bus'},
     {key: 'regional-coach', name: 'Regional coach'},
     {key: 'regional-train', name: 'Regional train'},
-  ],
-
-  routerHistory: []
+  ]
 };
 
 // Router.
-Ptver.Router = Backbone.Router.extend({
+Ptviewer.Router = Backbone.Router.extend({
 
   execute: function(callback, args, name) {
     this.handleHeaderActions(name);
@@ -43,7 +41,7 @@ Ptver.Router = Backbone.Router.extend({
   },
 
   initialize: function() {
-    Ptver.headerActionView = new Ptver.View.HeaderActionsView();
+    Ptviewer.headerActionView = new Ptviewer.View.HeaderActionsView();
   },
 
   handleHeaderActions: function(name) {
@@ -54,24 +52,14 @@ Ptver.Router = Backbone.Router.extend({
     }
   },
 
-  handleRouterHistory: function() {
-    if (Backbone.history.getFragment() == "") {
-      Ptver.routerHistory = [];
-    }
-
-    if (_.indexOf(Ptver.routerHistory, Backbone.history.getFragment()) == -1) {
-      Ptver.routerHistory.push(Backbone.history.getFragment());
-    }
-  },
-
   handleIndex: function() {
-    new Ptver.View.IndexView();
+    new Ptviewer.View.IndexView();
   },
 
   handleNearbyStops: function(transport_type) {
     navigator.geolocation.getCurrentPosition(function(position) {
-      localStorage.ptver_device_latitude = position.coords.latitude;
-      localStorage.ptver_device_longitude = position.coords.longitude;
+      localStorage.ptviewer_device_latitude = position.coords.latitude;
+      localStorage.ptviewer_device_longitude = position.coords.longitude;
       var stopsList = new NearbyStopsCollection({transport_type: transport_type, latitude: position.coords.latitude, longitude: position.coords.longitude});
       var nearbyStopsView = new NearbyStopsView({collection: stopsList});
       stopsList.fetch();
@@ -102,7 +90,7 @@ Ptver.Router = Backbone.Router.extend({
 });
 
 // Index view.
-Ptver.View.IndexView = Backbone.View.extend({
+Ptviewer.View.IndexView = Backbone.View.extend({
 
   el: $("#container-view"),
 
@@ -127,7 +115,7 @@ Ptver.View.IndexView = Backbone.View.extend({
 });
 
 // Index view.
-Ptver.View.HeaderActionsView = Backbone.View.extend({
+Ptviewer.View.HeaderActionsView = Backbone.View.extend({
 
   el: $("#header-actions"),
 
@@ -141,7 +129,7 @@ Ptver.View.HeaderActionsView = Backbone.View.extend({
   },
 
   onClickHeaderHomeButton: function(e) {
-    Ptver.router.navigate("", {trigger: true, replace: true});
+    Ptviewer.router.navigate("", {trigger: true, replace: true});
   },
 
   onClickHeaderBackButton: function(e) {
@@ -195,7 +183,7 @@ var NearbyStopsCollection = Backbone.Collection.extend({
 });
 
 var NearbyStopsView = Backbone.View.extend({
-  el: Ptver.appContainer,
+  el: Ptviewer.appContainer,
 
   template: _.template($("#nearby-stops-template").html()),
 
@@ -205,7 +193,7 @@ var NearbyStopsView = Backbone.View.extend({
 
   render: function() {
     this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
-    Ptver.Helper.afterRender();
+    Ptviewer.Helper.afterRender();
   }
 });
 
@@ -234,7 +222,7 @@ var BroadNextDepartureCollection = Backbone.Collection.extend({
   initialize: function(options) {
     this.transportTypeId = options.transportTypeId;
     this.stopId = options.stopId;
-    this.url = PTVTimetableAPI.broadNextDepartures(this.transportTypeId, this.stopId, Ptver.numOfBroadNextDepartures)
+    this.url = PTVTimetableAPI.broadNextDepartures(this.transportTypeId, this.stopId, Ptviewer.numOfBroadNextDepartures)
   },
 
   parse: function(response) {
@@ -263,7 +251,7 @@ var BroadNextDepartureCollection = Backbone.Collection.extend({
 
 var BroadNextDeparturesView = Backbone.View.extend({
 
-  el: Ptver.appContainer,
+  el: Ptviewer.appContainer,
 
   mapContainerWidth: null,
 
@@ -278,7 +266,7 @@ var BroadNextDeparturesView = Backbone.View.extend({
 
   render: function() {
     this.$el.html(this.template({broad_next_departures: this.collection.toJSON()}));
-    Ptver.Helper.afterRender();
+    Ptviewer.Helper.afterRender();
   }
 
 });
@@ -331,7 +319,7 @@ var DisruptionsCollection = Backbone.Collection.extend({
 
 var DisruptionsView = Backbone.View.extend({
 
-  el: Ptver.appContainer,
+  el: Ptviewer.appContainer,
 
   template: _.template($("#disruptions-template").html()),
 
@@ -341,7 +329,7 @@ var DisruptionsView = Backbone.View.extend({
 
   render: function() {
     this.$el.html(this.template({disruptions: this.collection.toJSON()}));
-    Ptver.Helper.afterRender();
+    Ptviewer.Helper.afterRender();
   }
 });
 
@@ -356,7 +344,7 @@ var DisruptionsView = Backbone.View.extend({
     }, false);
 
     // Start router.
-    Ptver.router = new Ptver.Router();
+    Ptviewer.router = new Ptviewer.Router();
     Backbone.history.start();
 
 }());
