@@ -378,7 +378,7 @@ Ptviewer.View.DisruptionCategoriesView = Backbone.View.extend({
 
 (function() {
 
-    //Ptviewer.loader.hide();
+    FastClick.attach(document.body);
 
     document.addEventListener('deviceready', function () {
         StatusBar.overlaysWebView( false );
