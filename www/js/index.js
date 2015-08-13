@@ -125,7 +125,8 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
 
   events: {
     "click #home-ptviewer": "onClickHeaderHomeButton",
-    "click #back-ptviewer": "onClickHeaderBackButton"
+    "click #back-ptviewer": "onClickHeaderBackButton",
+    "click #refresh-ptviewer": "onClickHeaderRefreshButton"
   },
 
   onClickHeaderHomeButton: function(e) {
@@ -134,6 +135,10 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
 
   onClickHeaderBackButton: function(e) {
     window.history.back();
+  },
+
+  onClickHeaderRefreshButton: function(e) {
+    Backbone.history.loadUrl();
   },
 
   initialize: function(options) {
