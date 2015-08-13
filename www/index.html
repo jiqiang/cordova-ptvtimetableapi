@@ -24,6 +24,7 @@
         <a class="mdl-navigation__link" href="#">Home</a>
         <a class="mdl-navigation__link" href="#nearby-stops-types">Find nearby stops</a>
         <a class="mdl-navigation__link" href="#disruptions">Find disruptions</a>
+        <a class="mdl-navigation__link" href="#debug">Debug</a>
     </nav>
   </div>
   <main class="mdl-layout__content">
@@ -36,6 +37,12 @@
 </div>
 
 <!-- Start of template -->
+<script type="text/template" id="ptviewer-debug-template">
+    <div class="mdl-grid">
+        <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop"><%= connectionState %></div>
+    </div>
+</script>
+
 <script type="text/template" id="ptv-service-down-template">
     <div class="mdl-grid">
         <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">

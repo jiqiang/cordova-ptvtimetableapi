@@ -24,7 +24,24 @@ var Ptviewer = {
     {key: 'regional-train', name: 'Regional train'},
   ],
 
-  loader: $("#ptviewer-loader")
+  loader: $("#ptviewer-loader"),
+
+  connectionState: function (connection) {
+    if (connection === undefined) {
+      return 'Not in device';
+    }
+
+    var states = {};
+    states[Connection.UNKNOWN]  = 'Unknown connection';
+    states[Connection.ETHERNET] = 'Ethernet connection';
+    states[Connection.WIFI]     = 'WiFi connection';
+    states[Connection.CELL_2G]  = 'Cell 2G connection';
+    states[Connection.CELL_3G]  = 'Cell 3G connection';
+    states[Connection.CELL_4G]  = 'Cell 4G connection';
+    states[Connection.CELL]     = 'Cell generic connection';
+    states[Connection.NONE]     = 'No network connection';
+    return states[connection.type];
+  }
 };
 
 // Router.
@@ -39,6 +56,7 @@ Ptviewer.Router = Backbone.Router.extend({
   },
 
   routes: {
+    "debug": "handleDebug",
     "": "handleIndex",
     "nearby-stops-types": "handleNearbyStopsTypes",
     "nearby-stops/:transport_type": "handleNearbyStops",
@@ -57,6 +75,10 @@ Ptviewer.Router = Backbone.Router.extend({
     } else {
       $("#home-ptviewer, #back-ptviewer").show();
     }
+  },
+
+  handleDebug: function() {
+    new Ptviewer.View.DebugView();
   },
 
   handleIndex: function() {
@@ -372,6 +394,21 @@ Ptviewer.View.DisruptionCategoriesView = Backbone.View.extend({
   }
 });
 
+Ptviewer.View.DebugView = Backbone.View.extend({
+  el: $("#container-view"),
+
+  template: _.template($("#ptviewer-debug-template").html()),
+
+  initialize: function() {
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({connectionState: Ptviewer.connectionState(navigator.connection)}));
+    Ptviewer.Helper.afterRender();
+  }
+});
+
 (function() {
 
     FastClick.attach(document.body);
@@ -380,9 +417,26 @@ Ptviewer.View.DisruptionCategoriesView = Backbone.View.extend({
         StatusBar.overlaysWebView( false );
         StatusBar.backgroundColorByHexString('#ffffff');
         StatusBar.styleDefault();
-        navigator.geolocation.getCurrentPosition(function(position) {
 
-        });
+        if (navigator.notification) { // Override default HTML alert with native dialog
+          window.alert = function (message) {
+            navigator.notification.alert(
+              message,    // message
+              null,       // callback
+              "Alert", // title
+              'OK'        // buttonName
+            );
+          };
+        }
+
+        document.addEventListener("offline", function() {
+          alert("Device is offline");
+        }, false);
+
+        document.addEventListener("online", function() {
+          alert("Device is online");
+        }, false);
+
     }, false);
 
     // Start router.
