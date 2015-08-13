@@ -14,7 +14,7 @@
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
+  font-size: 18px;  /* Preferred icon size */
   display: inline-block;
   width: 1em;
   height: 1em;
@@ -34,6 +34,11 @@
   /* Support for IE. */
   font-feature-settings: 'liga';
 }
+
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; }
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
 
 #preloader {
   width: 100%;
@@ -60,6 +65,10 @@ a {
   min-height: 120px;
 }
 
-div.list-show-border {
+div.ptviewer-list-item {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+div.ptviewer-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }

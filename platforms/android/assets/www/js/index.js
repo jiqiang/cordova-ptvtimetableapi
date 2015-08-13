@@ -3,7 +3,9 @@ var Ptviewer = {
   Model: {},
   Collection: {},
   Helper: {
-    afterRender: function() {}
+    afterRender: function() {
+      Ptviewer.loader.hide();
+    }
   },
 
   appContainer: $("#container-view"),
@@ -20,18 +22,41 @@ var Ptviewer = {
     {key: 'regional-bus', name: 'Regional bus'},
     {key: 'regional-coach', name: 'Regional coach'},
     {key: 'regional-train', name: 'Regional train'},
-  ]
+  ],
+
+  loader: $("#ptviewer-loader"),
+
+  connectionState: function (connection) {
+    if (connection === undefined) {
+      return 'Not in device';
+    }
+
+    var states = {};
+    states[Connection.UNKNOWN]  = 'Unknown connection';
+    states[Connection.ETHERNET] = 'Ethernet connection';
+    states[Connection.WIFI]     = 'WiFi connection';
+    states[Connection.CELL_2G]  = 'Cell 2G connection';
+    states[Connection.CELL_3G]  = 'Cell 3G connection';
+    states[Connection.CELL_4G]  = 'Cell 4G connection';
+    states[Connection.CELL]     = 'Cell generic connection';
+    states[Connection.NONE]     = 'No network connection';
+    return states[connection.type];
+  }
 };
 
 // Router.
 Ptviewer.Router = Backbone.Router.extend({
 
   execute: function(callback, args, name) {
+
+    Ptviewer.loader.show();
+
     this.handleHeaderActions(name);
     if (callback) callback.apply(this, args);
   },
 
   routes: {
+    "debug": "handleDebug",
     "": "handleIndex",
     "nearby-stops-types": "handleNearbyStopsTypes",
     "nearby-stops/:transport_type": "handleNearbyStops",
@@ -52,6 +77,10 @@ Ptviewer.Router = Backbone.Router.extend({
     }
   },
 
+  handleDebug: function() {
+    new Ptviewer.View.DebugView();
+  },
+
   handleIndex: function() {
     new Ptviewer.View.IndexView();
   },
@@ -61,30 +90,28 @@ Ptviewer.Router = Backbone.Router.extend({
       localStorage.ptviewer_device_latitude = position.coords.latitude;
       localStorage.ptviewer_device_longitude = position.coords.longitude;
       var stopsList = new NearbyStopsCollection({transport_type: transport_type, latitude: position.coords.latitude, longitude: position.coords.longitude});
-      var nearbyStopsView = new NearbyStopsView({collection: stopsList});
+      var nearbyStopsView = new Ptviewer.View.NearbyStopsView({collection: stopsList});
       stopsList.fetch();
     });
   },
 
   handleNearbyStopsTypes: function() {
-    var template = _.template($("#nearby-stops-types-template").html());
-    $("#container-view").html(template({}));
+    new Ptviewer.View.NearbyStopsTypesView();
   },
 
   handleBroadNextDepartures: function(stopid, transporttypeid) {
     var departures = new BroadNextDepartureCollection({transportTypeId: transporttypeid, stopId: stopid});
-    var broadNextDepartureView = new BroadNextDeparturesView({collection: departures});
+    var broadNextDepartureView = new Ptviewer.View.BroadNextDeparturesView({collection: departures});
     departures.fetch();
   },
 
   handleDisruptionCategories: function() {
-    var template = _.template($("#disruption-categories-template").html());
-    $("#container-view").html(template({}));
+    new Ptviewer.View.DisruptionCategoriesView();
   },
 
   handleDisruptions: function(mode) {
     var disruptions = new DisruptionsCollection({mode: mode});
-    var disruptionsView = new DisruptionsView({collection: disruptions});
+    var disruptionsView = new Ptviewer.View.DisruptionsView({collection: disruptions});
     disruptions.populate();
   }
 });
@@ -111,6 +138,7 @@ Ptviewer.View.IndexView = Backbone.View.extend({
         that.$el.html(_.template($("#ptv-service-down-template").html()));
       }
     });
+    Ptviewer.Helper.afterRender();
   }
 });
 
@@ -125,7 +153,8 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
 
   events: {
     "click #home-ptviewer": "onClickHeaderHomeButton",
-    "click #back-ptviewer": "onClickHeaderBackButton"
+    "click #back-ptviewer": "onClickHeaderBackButton",
+    "click #refresh-ptviewer": "onClickHeaderRefreshButton"
   },
 
   onClickHeaderHomeButton: function(e) {
@@ -136,11 +165,11 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
     window.history.back();
   },
 
-  initialize: function(options) {
-    if (options != undefined) {
-      this.hideHeaderButton = options.hideHeaderButton;
-    }
+  onClickHeaderRefreshButton: function(e) {
+    Backbone.history.loadUrl();
+  },
 
+  initialize: function(options) {
     this.render();
   },
 
@@ -182,7 +211,7 @@ var NearbyStopsCollection = Backbone.Collection.extend({
   }
 });
 
-var NearbyStopsView = Backbone.View.extend({
+Ptviewer.View.NearbyStopsView = Backbone.View.extend({
   el: Ptviewer.appContainer,
 
   template: _.template($("#nearby-stops-template").html()),
@@ -193,6 +222,22 @@ var NearbyStopsView = Backbone.View.extend({
 
   render: function() {
     this.$el.html(this.template({nearby_stops: this.collection.toJSON()}));
+    Ptviewer.Helper.afterRender();
+  }
+});
+
+Ptviewer.View.NearbyStopsTypesView = Backbone.View.extend({
+
+  el: $("#container-view"),
+
+  template: _.template($("#nearby-stops-types-template").html()),
+
+  initialize: function() {
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({}));
     Ptviewer.Helper.afterRender();
   }
 });
@@ -249,7 +294,7 @@ var BroadNextDepartureCollection = Backbone.Collection.extend({
   }
 });
 
-var BroadNextDeparturesView = Backbone.View.extend({
+  Ptviewer.View.BroadNextDeparturesView = Backbone.View.extend({
 
   el: Ptviewer.appContainer,
 
@@ -317,7 +362,7 @@ var DisruptionsCollection = Backbone.Collection.extend({
   }
 });
 
-var DisruptionsView = Backbone.View.extend({
+Ptviewer.View.DisruptionsView = Backbone.View.extend({
 
   el: Ptviewer.appContainer,
 
@@ -333,14 +378,69 @@ var DisruptionsView = Backbone.View.extend({
   }
 });
 
-(function() {
-    document.addEventListener('deviceready', function () {
-        StatusBar.overlaysWebView( false );
-        StatusBar.backgroundColorByHexString('#ffffff');
-        StatusBar.styleDefault();
-        navigator.geolocation.getCurrentPosition(function(position) {
+Ptviewer.View.DisruptionCategoriesView = Backbone.View.extend({
 
-        });
+  el: $("#container-view"),
+
+  template: _.template($("#disruption-categories-template").html()),
+
+  initialize: function() {
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({}));
+    Ptviewer.Helper.afterRender();
+  }
+});
+
+Ptviewer.View.DebugView = Backbone.View.extend({
+  el: $("#container-view"),
+
+  template: _.template($("#ptviewer-debug-template").html()),
+
+  initialize: function() {
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({connectionState: Ptviewer.connectionState(navigator.connection)}));
+    Ptviewer.Helper.afterRender();
+  }
+});
+
+Ptviewer.View.NoInternetView = Backbone.View.extend({
+  el: $("#container-view"),
+
+  template: _.template($("#ptviewer-no-internet-template").html()),
+
+  initialize: function() {
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({}));
+    Ptviewer.Helper.afterRender();
+  }
+});
+
+(function() {
+
+    FastClick.attach(document.body);
+
+    document.addEventListener('deviceready', function () {
+      StatusBar.overlaysWebView( false );
+      StatusBar.backgroundColorByHexString('#ffffff');
+      StatusBar.styleDefault();
+
+      document.addEventListener("offline", function() {
+        navigator.notification.alert(
+          "Device is offline",
+          function() { new Ptviewer.View.NoInternetView(); },
+          "Alert",
+          "OK"
+        );
+      }, false);
     }, false);
 
     // Start router.

@@ -43,6 +43,14 @@ var PTVTimetableAPI = {
         }, []).join('&');
     },
 
+    setSecurityKey: function(securityKey) {
+        this._securityKey = securityKey;
+    },
+
+    setDeveloperId: function(developerId) {
+        this._developerId = developerId;
+    },
+
     get_transport_type_id: function(tt) {
       return _.propertyOf(this._transport_types)(tt);
     },

@@ -409,34 +409,38 @@ Ptviewer.View.DebugView = Backbone.View.extend({
   }
 });
 
+Ptviewer.View.NoInternetView = Backbone.View.extend({
+  el: $("#container-view"),
+
+  template: _.template($("#ptviewer-no-internet-template").html()),
+
+  initialize: function() {
+    this.render();
+  },
+
+  render: function() {
+    this.$el.html(this.template({}));
+    Ptviewer.Helper.afterRender();
+  }
+});
+
 (function() {
 
     FastClick.attach(document.body);
 
     document.addEventListener('deviceready', function () {
-        StatusBar.overlaysWebView( false );
-        StatusBar.backgroundColorByHexString('#ffffff');
-        StatusBar.styleDefault();
+      StatusBar.overlaysWebView( false );
+      StatusBar.backgroundColorByHexString('#ffffff');
+      StatusBar.styleDefault();
 
-        if (navigator.notification) { // Override default HTML alert with native dialog
-          window.alert = function (message) {
-            navigator.notification.alert(
-              message,    // message
-              null,       // callback
-              "Alert", // title
-              'OK'        // buttonName
-            );
-          };
-        }
-
-        document.addEventListener("offline", function() {
-          alert("Device is offline");
-        }, false);
-
-        document.addEventListener("online", function() {
-          alert("Device is online");
-        }, false);
-
+      document.addEventListener("offline", function() {
+        navigator.notification.alert(
+          "Device is offline",
+          function() { new Ptviewer.View.NoInternetView(); },
+          "Alert",
+          "OK"
+        );
+      }, false);
     }, false);
 
     // Start router.

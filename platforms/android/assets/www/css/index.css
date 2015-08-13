@@ -65,6 +65,10 @@ a {
   min-height: 120px;
 }
 
-div.list-show-border {
+div.ptviewer-list-item {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+div.ptviewer-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
