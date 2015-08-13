@@ -148,10 +148,6 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
   },
 
   initialize: function(options) {
-    if (options != undefined) {
-      this.hideHeaderButton = options.hideHeaderButton;
-    }
-
     this.render();
   },
 
