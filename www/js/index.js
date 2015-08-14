@@ -40,6 +40,28 @@ var Ptviewer = {
     states[Connection.CELL_4G]  = 'Cell 4G connection';
     states[Connection.CELL]     = 'Cell generic connection';
     states[Connection.NONE]     = 'No network connection';
+
+    return states[connection.type];
+  },
+
+  hasInternet: function (connection) {
+
+    // As connection object is only available in mobile device, we always assume
+    // it has internet access in desktop browsers.
+    if (connection === undefined) {
+      return true;
+    }
+
+    var states = {};
+    states[Connection.UNKNOWN]  = true;
+    states[Connection.ETHERNET] = true;
+    states[Connection.WIFI]     = true;
+    states[Connection.CELL_2G]  = true;
+    states[Connection.CELL_3G]  = true;
+    states[Connection.CELL_4G]  = true;
+    states[Connection.CELL]     = true;
+    states[Connection.NONE]     = false;
+
     return states[connection.type];
   }
 };
@@ -49,10 +71,20 @@ Ptviewer.Router = Backbone.Router.extend({
 
   execute: function(callback, args, name) {
 
-    Ptviewer.loader.show();
+    if (!Ptviewer.hasInternet(navigator.connection)) {
 
-    this.handleHeaderActions(name);
-    if (callback) callback.apply(this, args);
+      new Ptviewer.View.NoInternetView();
+
+    } else {
+
+      Ptviewer.loader.show();
+
+      this.handleHeaderActions(name);
+
+      if (callback) {
+        callback.apply(this, args);
+      }
+    }
   },
 
   routes: {
