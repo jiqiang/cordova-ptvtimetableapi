@@ -128,9 +128,6 @@
 
 <script type="text/template" id="nearby-stops-types-template">
 <div class="mdl-grid mdl-grid--no-spacing">
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-    <div class="mdl-card"><div class="mdl-card__supporting-text">Stop types</div></div>
-  </div>
   <% _.each(Ptviewer.nearbyStopsTypes, function(t) { %>
     <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
       <a href="#nearby-stops/<%= t %>">
@@ -182,9 +179,6 @@
 
 <script type="text/template" id="disruption-categories-template">
 <div class="mdl-grid mdl-grid--no-spacing">
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-    <div class="mdl-card"><div class="mdl-card__supporting-text">Disruption categories</div></div>
-  </div>
   <% _.each(Ptviewer.disruptionCategories, function(c) { %>
     <div class="mdl-cell mdl-cell--4-col mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
       <a href="#disruptions/<%= c.key %>">
