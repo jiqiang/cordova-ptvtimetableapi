@@ -186,7 +186,8 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
   events: {
     "click #home-ptviewer": "onClickHeaderHomeButton",
     "click #back-ptviewer": "onClickHeaderBackButton",
-    "click #refresh-ptviewer": "onClickHeaderRefreshButton"
+    "click #refresh-ptviewer": "onClickHeaderRefreshButton",
+    "click #close-ptviewer": "onClickHeaderCloseButton"
   },
 
   onClickHeaderHomeButton: function(e) {
@@ -199,6 +200,21 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
 
   onClickHeaderRefreshButton: function(e) {
     Backbone.history.loadUrl();
+  },
+
+  onClickHeaderCloseButton: function(e) {
+    if (navigator.app) {
+      navigator.notification.confirm(
+        "Are you sure you want to exit?",
+        function (btnIdx) {
+          if (btnIdx === 0) {
+            navigator.app.exitApp();
+          }
+        },
+        "Exit Ptviewer",
+        ["Yes", "no"]
+      );
+    }
   },
 
   initialize: function(options) {
