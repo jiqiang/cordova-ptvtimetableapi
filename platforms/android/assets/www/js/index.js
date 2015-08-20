@@ -40,6 +40,28 @@ var Ptviewer = {
     states[Connection.CELL_4G]  = 'Cell 4G connection';
     states[Connection.CELL]     = 'Cell generic connection';
     states[Connection.NONE]     = 'No network connection';
+
+    return states[connection.type];
+  },
+
+  hasInternet: function (connection) {
+
+    // As connection object is only available in mobile device, we always assume
+    // it has internet access in desktop browsers.
+    if (connection === undefined) {
+      return true;
+    }
+
+    var states = {};
+    states[Connection.UNKNOWN]  = true;
+    states[Connection.ETHERNET] = true;
+    states[Connection.WIFI]     = true;
+    states[Connection.CELL_2G]  = true;
+    states[Connection.CELL_3G]  = true;
+    states[Connection.CELL_4G]  = true;
+    states[Connection.CELL]     = true;
+    states[Connection.NONE]     = false;
+
     return states[connection.type];
   }
 };
@@ -49,10 +71,20 @@ Ptviewer.Router = Backbone.Router.extend({
 
   execute: function(callback, args, name) {
 
-    Ptviewer.loader.show();
+    if (!Ptviewer.hasInternet(navigator.connection)) {
 
-    this.handleHeaderActions(name);
-    if (callback) callback.apply(this, args);
+      new Ptviewer.View.NoInternetView();
+
+    } else {
+
+      Ptviewer.loader.show();
+
+      this.handleHeaderActions(name);
+
+      if (callback) {
+        callback.apply(this, args);
+      }
+    }
   },
 
   routes: {
@@ -154,7 +186,8 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
   events: {
     "click #home-ptviewer": "onClickHeaderHomeButton",
     "click #back-ptviewer": "onClickHeaderBackButton",
-    "click #refresh-ptviewer": "onClickHeaderRefreshButton"
+    "click #refresh-ptviewer": "onClickHeaderRefreshButton",
+    "click #close-ptviewer": "onClickHeaderCloseButton"
   },
 
   onClickHeaderHomeButton: function(e) {
@@ -167,6 +200,21 @@ Ptviewer.View.HeaderActionsView = Backbone.View.extend({
 
   onClickHeaderRefreshButton: function(e) {
     Backbone.history.loadUrl();
+  },
+
+  onClickHeaderCloseButton: function(e) {
+    if (navigator.app) {
+      navigator.notification.confirm(
+        "Are you sure you want to exit?",
+        function (btnIdx) {
+          if (btnIdx === 0) {
+            navigator.app.exitApp();
+          }
+        },
+        "Exit Ptviewer",
+        ["Yes", "no"]
+      );
+    }
   },
 
   initialize: function(options) {
